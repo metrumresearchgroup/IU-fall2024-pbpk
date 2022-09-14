@@ -1,0 +1,35 @@
+
+# Z-Pak answer--------------------------------------------
+
+source("src/global.R")
+library(dplyr)
+library(mrgsolve)
+rm(list = ls())
+
+#' You've been sick for the last two weeks and can't take it any more. 
+#' Finally, you decide to go to the doctor, who gives you a diagnosis of 
+#' walking pneumonia. When you get home with your azithromycin 
+#' prescription, you start wondering about the directions: take 
+#' 500 mg as a single dose on Day 1, followed by 250 mg once daily 
+#' on Days 2 through 5.
+
+#' Explore this regimen using the following model:
+
+#' - Model file name: `azithro.cpp`
+#' - Model location: `model`
+
+#' Simulate out to at least day 14 to see what is happening.
+#' 
+#' Specifically, look at peripheral compartment concentration.
+#' 
+
+mod <- mread("azithro", "model") %>% zero_re
+
+e <- seq(ev(amt = 250) ,ev(amt = 250, ii = 24, addl = 3))
+
+mod %>% 
+  ev(e) %>% 
+  mrgsim(end = 168*2) %>%
+  plot(PER2+PER3~time)
+
+
