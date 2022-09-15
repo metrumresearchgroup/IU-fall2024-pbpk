@@ -120,7 +120,7 @@ $$\frac{dA_{lu}}{dt}=Q_{lu}(C_{ven} − \frac{C_{lu}}{\frac{Kp_{lu}}{BP}})$$
 
 ### c. Tasks
 
-1. Use `models/simplePBPK.cpp` file to build a simple PBPK model.
+1. Use `models/simplePBPK.mod` file to build a simple PBPK model.
 
 2. Use `script.R` script to compile the model and run a simple simulation (chunks 1 and 2).
 
@@ -143,11 +143,11 @@ Utsey, Kiersten, Madeleine S. Gastonguay, Sean Russell, Reed Freling, Matthew M.
 
 **Note:** for the following tasks use `script.R`
 
-1. Explore and compile typical adult male PBPK model `models/voriPBPK.cpp` 
+1. Explore and compile typical adult male PBPK model `models/voriPBPK.mod` 
 
 ```{r}
 
-modA <- mread("models/voriPBPK")
+modA <- mread("models/voriPBPK.mod")
 
 ```
 
@@ -163,7 +163,7 @@ pKa <- 1.76
 fup <- 0.42   #unbound fraction in plasma
 type <- 3     #monoprotic base
 BP <- 1       #blood:plasma concentration ratio
-dat <- read.csv("../data/source/tissue_comp_PT.csv")
+dat <- read.csv("data/tissue_comp_PT.csv")
 
 #calculate partition coefficients
 Kp <- calcKp_PT(logP=logP, pKa=pKa, fup=fup, BP=BP, type=type, dat=dat)
@@ -181,7 +181,7 @@ adult male with a rate of 4 mg/kg/h twice a day for 7 days. Compare the steady s
 ```{r}
 
 #load observed IV infusion data
-obs <- read.csv("../data/source/Adult_IV.csv")
+obs <- read.csv("data/Adult_IV.csv")
 
 #set simulation conditions
 bw   <- 73
@@ -221,7 +221,7 @@ concentration-time profile to the observed data in `Adult_PO.csv`.
 
 ```{r}
 
-obs <- read.csv("../data/source/Adult_PO.csv")
+obs <- read.csv("data/Adult_PO.csv")
 
 bw   <- 73
 amt  <- 200
@@ -259,7 +259,7 @@ Recompile and re-run the previous step. Any change!!
 ![](figures/absorption_model.png){width=25%}
 ```{r}
 
-modA <- mread("models/voriPBPK_ext") %>%
+modA <- mread("models/voriPBPK_ext.mod") %>%
   param(MPPGI = 30.3/30) %>%
   param(Kp)
 
@@ -329,7 +329,7 @@ to the observed data in `Pediatric_IV.csv`.
 
 ```{r}
 
-obs <- read.csv("../data/source/Pediatric_IV.csv")  #load observed data
+obs <- read.csv("data/Pediatric_IV.csv")  #load observed data
 
 wt   <- 19  #pediatric body weight
 amt  <- 4*wt  
@@ -368,7 +368,7 @@ Note: Include a similar 30-fold lower intestinal clearance than hepatic clearanc
 
 ```{r}
 
-obs <- read.csv("../data/source/Pediatric_PO.csv")  #load observed data
+obs <- read.csv("data/Pediatric_PO.csv")  #load observed data
 
 # adjust intestinal clearance
 modP <- modP %>% param(MPPGI = 26 / 30)
@@ -418,7 +418,7 @@ lung:plasma (`Kplu`) partition coefficients using adult IV data.
 ```{r}
 
 #load observed IV infusion data
-obs <- read.csv("../data/source/Adult_IV.csv")
+obs <- read.csv("data/Adult_IV.csv")
 
 #set simulation conditions
 bw   <- 73
@@ -636,7 +636,7 @@ Simulate a 4 mg/kg voriconazole IV infusion dosing in a male child subject infus
 
 ```{r}
 
-obs <- read.csv("../data/source/Pediatric_IV.csv")  #load observed data
+obs <- read.csv("data/Pediatric_IV.csv")  #load observed data
 
 wt <- 19  #adult body weight
 amt <- 4*wt  
@@ -694,7 +694,7 @@ Meyer, Michaela, Sebastian Schneckener, Bernd Ludewig, Lars Kuepfer, and Joerg L
 ```{r}
 
 # load population params
-popPars <- readRDS("../data/derived/popPars_100.rds")
+popPars <- readRDS("data/popPars_100.rds")
 
 # add IIV on ka and CL/VmaxH
 set.seed(192898)
@@ -707,7 +707,7 @@ popPars2 <- lapply(1:length(popPars), function(i){
   })
 
 # simulate
-modA2 <- mread("models/voriPBPK2")
+modA2 <- mread("models/voriPBPK2.mod")
 Kpmu <- 0.56
 modA2 <- param(modA2, Kpmu=Kpmu)
 
@@ -972,7 +972,7 @@ https://github.com/metrumresearchgroup/bioPBPK
 
 ```{r}
 
-mod_mab <- mread("models/mAb_bamlanivimab.cpp")
+mod_mab <- mread("models/mAb_bamlanivimab.mod")
 
 # set up simulation conditions
 dose <- 700/150 #700 mg to umol
