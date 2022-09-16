@@ -1,0 +1,6 @@
+html_document: 
+  theme: flatly
+  highlight: pygments
+  toc: true
+  number_sections: true
+  css: ../src/styles/styles.css

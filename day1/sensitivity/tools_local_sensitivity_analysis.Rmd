@@ -1,0 +1,248 @@
+---
+title: Local sensitivity analysis
+author: "Metrum Research Group"
+date: ""
+knit_root_dir: "../"
+---
+  
+# Setup
+
+```{r, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(mrgsolve)
+library(FME)
+theme_set(theme_bw())
+```
+
+
+# Graphical sensitivity analyses
+
+```{r, message = FALSE}
+mod <- mread_cache("pk2", modlib())
+
+.n <- 10
+
+.factor <- 3
+
+v2 <- mod$V2
+
+idata <- data_frame(
+  V2 = seq(v2/.factor, v2*.factor, length.out = .n), 
+  ID = seq(.n)
+)
+```
+
+```{r}
+head(idata)
+```
+
+```{r}
+
+sens <- 
+  mod %>% 
+  ev(amt = 100) %>%
+  idata_set(idata) %>%
+  mrgsim(end = 48, delta = 0.1)
+
+plot(sens, CP~time)
+```
+
+
+# Local sensitivity analysis
+
+## Sensitivity function
+
+- Arguments
+    1. `p`: parameters
+    1. `e`; intervention (event) object
+- Return: a data frame
+
+```{r}
+func <- function(p, mod, e) {
+  mod %>%
+    param(p) %>%
+    ev(e) %>% 
+    mrgsim(obsonly = TRUE, atol = 1E-20) %>% 
+    select(-ID)
+}
+```
+
+
+# Two-comparment PK
+
+Load this from the model library
+
+```{r, message = FALSE}
+mod <- mread_cache("pk2", modlib(), delta  = 0.2, end = 72)
+```
+
+Just a simple intervention
+```{r}
+e <- ev(amt = 100)
+```
+
+## Test the function
+```{r}
+l <- as.list(param(mod))
+
+func(l, mod, ev(amt = 100))
+```
+
+
+## Pick some parameters for sensitivity analysis
+```{r}
+parm <- as.list(param(mod))[c("CL", "V2", "Q", "V3","KA")]
+```
+
+```{r}
+out <- FME::sensFun(func, parm, e  = e, mod = mod)
+```
+
+
+Here's the PK profile
+```{r}
+mrgsim_e(mod, e, Req = "CP") %>% plot()
+```
+
+Here's the sensitivity analysis for plasma concentration
+
+```{r}
+plot(out, which = "CP", legpos = "right")
+```
+
+The sensitivity analysis helps us get a handle on what parameter to 
+target for a specific feature in the profile.  So if we're interested
+in Cmax, we'd look at `KA` or `V2`. 
+
+Sensitivity analysis, amount in peripheral compartment
+```{r}
+plot(out, which = "PERIPH", legpos = "right")
+```
+
+```{r}
+summary(out)
+```
+
+
+
+# Rifampin single dose
+
+```{r, message = FALSE}
+mod <- mread_cache("rifampicin_midazolam", "model")
+```
+
+```{r}
+e <- ev(amt = 600)
+```
+
+```{r}
+pars <- as.list(param(mod))
+```
+
+
+```{r}
+parm <- pars[c("fBCLint_all_kg", "SFKp", "ka")]
+```
+
+
+```{r}
+mod %>% 
+  ev(e) %>% 
+  mrgsim(delta = 0.1) %>% 
+  plot(Ccentral ~ time)
+```
+
+```{r}
+mod <- update(mod, end = 12, delta = 0.1)
+```
+
+
+```{r}
+out <- sensFun(func, parm, e = e, mod = mod, tiny = 1E-6)
+```
+
+```{r}
+plot(out, which = "Ccentral", legpos = "bottomleft")
+```
+
+
+
+# Rifampin auto-induction
+ 
+ 
+## Recall the induction of rifampin metabolism via UGT
+ 
+Event object for rifampin 600 mg po daily x7 
+
+```{r}
+e <- ev(amt = 600, ii = 24, addl = 6)
+
+mod <- update(mod, end = 168)
+```
+
+
+```{r}
+mod %>%
+  ev(e) %>%
+  mrgsim(delta = 0.1, Req  = "Ccentral") %>%
+  plot()
+```
+
+Lets look at some parameters that might be involved in 
+this process
+ 
+```{r}
+p <- c("fBCLint_all_kg","EC50_u_UGT_RIF", "Emax_UGT_RIF")
+
+parm <- pars[p]
+```
+
+```{r}
+out <- sensFun(func, parm, e = e, mod = mod, tiny = 1E-6, sensvar="Ccentral")
+```
+
+
+```{r}
+plot(out, legpos = "bottomright")
+```
+
+
+Clearly, the rifampin concentration is very sensitive to 
+the intrinsic clearance, especially at the trough. 
+
+Also notice that the max sensitivity grows over time 
+for `EC50_u_UGT_RIF` and `Emax_UGT_RIF`
+
+We want to understand what parameters are responsible for 
+the autoinduction process: what is contributing to the reduction 
+in AUC over the first 7 to 10 days of dosing?
+
+Using the sensitivity analysis output, get the daily max:
+
+```{r}
+sum <- 
+  out %>% 
+  mutate(DAY = 1+floor(x/24)) %>%
+  gather(variable,value, fBCLint_all_kg:Emax_UGT_RIF) %>%
+  group_by(DAY,variable) %>% 
+  summarise(mx = max(abs(value)))
+ 
+```
+
+Then normalize each to day 1
+
+```{r}
+summ <- 
+  sum %>%
+  group_by(variable) %>% 
+  mutate(normal_max = mx/first(mx))
+```
+
+Then plot over time
+
+```{r}
+ggplot(data = summ, aes(x = DAY, y = normal_max, col = variable)) + 
+  geom_line() + geom_point() + 
+  theme(legend.position = "top")
+```
+
