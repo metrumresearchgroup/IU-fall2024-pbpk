@@ -8,6 +8,7 @@ library(mrgsolve)
 # Chunks 13-14: parameter estimation
 # Chunks 15-18: population simulation
 # Chunk 19: interactive presentation / shiny
+# Chunk 20: mAb PBPK
 
 
 #------------------------------------------------------------------------------#
@@ -19,7 +20,7 @@ library(mrgsolve)
 ################################################################################
 
 # Populate and compile simplePBPK model
-mod <- mread("simplePBPK", "../model")
+mod <- mread("models/simplePBPK.mod")
 
 ################################################################################
 ################################################################################
@@ -47,7 +48,7 @@ mod %>%
 ################################################################################
 
 # Compile voriPBPK model
-modA <- mread("../model/voriPBPK")
+modA <- mread("models/voriPBPK.mod")
 
 ################################################################################
 ################################################################################
@@ -68,7 +69,7 @@ pKa <- 1.76
 fup <- 0.42   #unbound fraction in plasma
 type <- 3     #monoprotic base
 BP <- 1       #blood:plasma concentration ratio
-dat <- read.csv("../data/source/tissue_comp_P&T.csv")
+dat <- read.csv("data/tissue_comp_PT.csv")
 
 #calculate partition coefficients
 Kp <- calcKp_PT(logP=logP, pKa=pKa, fup=fup, BP=BP, type=type, dat=dat)
@@ -90,7 +91,7 @@ modA <- param(modA, Kp)
 # Zane and Thakker (2014) paper using WebPlotDigitizer https://automeris.io/WebPlotDigitizer/):
   
 #load observed IV infusion data
-obs <- read.csv("../data/source/Adult_IV.csv")
+obs <- read.csv("data/Adult_IV.csv")
 
 #set simulation conditions
 bw   <- 73
@@ -133,7 +134,7 @@ gp
 # with a rate of twice a day for 7 days. Compare the steady state plasma drug 
 # concentration-time profile to the observed data in `Adult_PO.csv`.
 
-obs <- read.csv("../data/source/Adult_PO.csv")
+obs <- read.csv("data/Adult_PO.csv")
 
 bw   <- 73
 amt  <- 200
@@ -174,7 +175,7 @@ gp
 # Recompile and re-run the previous step. Any change!!
 # https://www.jstage.jst.go.jp/article/yakushi/123/5/123_5_369/_article/-char/en
 
-modA <- mread("../model/voriPBPK_ext") %>%
+modA <- mread("models/voriPBPK_ext.mod") %>%
   param(MPPGI = 30.3/30) %>%
   param(Kp)
 
@@ -251,7 +252,7 @@ modP <- param(modA, pedPhys)
 # subject infused at a rate of 3 mg/kg/h twice a day for seven days. Compare the steady state 
 # to the observed data in `Pediatric_IV.csv`.
 
-obs <- read.csv("../data/source/Pediatric_IV.csv")  #load observed data
+obs <- read.csv("data/Pediatric_IV.csv")  #load observed data
 
 wt   <- 19  #pediatric body weight
 amt  <- 4*wt  
@@ -294,7 +295,7 @@ gp
 # Note: Include a similar 30-fold lower intestinal clearance than hepatic clearance.
 # https://www.jstage.jst.go.jp/article/yakushi/123/5/123_5_369/_article/-char/en
 
-obs <- read.csv("../data/source/Pediatric_PO.csv")  #load observed data
+obs <- read.csv("data/Pediatric_PO.csv")  #load observed data
 
 # adjust intestinal clearance
 modP <- modP %>% param(MPPGI = 26 / 30)
@@ -345,7 +346,7 @@ gp
 # lung:plasma (`Kplu`) partition coefficients using adult IV data.
 
 #load observed IV infusion data
-obs <- read.csv("../data/source/Adult_IV.csv")
+obs <- read.csv("data/Adult_IV.csv")
 
 #set simulation conditions
 bw   <- 73
@@ -390,70 +391,55 @@ modA %>%
 #################################  Chunk 12 ####################################
 ################################################################################
 
-## FME package ##
+## mrgsim.sa package ##
 
-# Use package `FME` (https://cran.r-project.org/web/packages/FME/index.html) to 
-# run local sensitivity analysis for the partition coefficient parameters Soetaert, 
-# Karline, and Thomas Petzoldt. 2010. “Inverse Modelling, Sensitivity and Monte Carlo 
-# Analysis in R Using Package FME.” Journal of Statistical Software, Articles 33 (3): 1–28. 
-# https://cran.r-project.org/web/packages/FME/vignettes/FME.pdf. <br> What is the 
-# most influential parameter?
+# The package mrgsim.sa simplifies the process of running local sensitivity analysis 
+# https://github.com/kylebaron/mrgsim.sa. The package can do graphical sensitivity as 
+# well as obtaining local sensitivity coefficients.
+# What is the most ing=fluential parameter?
 
-library(FME)
+library(mrgsim.sa)
 
 ### sensitivity analysis
-#set a list of the candidate parameters
-parms <- list(Kpad = 9.89, Kpbo = 7.91, Kpbr = 7.35, Kpgu = 5.82, Kphe = 1.95, Kpki = 2.9, Kpli = 4.66, Kplu = 0.83, Kpmu = 2.94, Kpsp = 2.96) 
 
 #set the output variable of interest
 sensvar <- c("CP")  
 
-#set the output function
-outFun <- function(pars){
-  out <- modA %>%
-    param(pars) %>%
-    ev(amt=amt, cmt=cmt, ii=ii, addl=addl, rate=rate, ss=ss) %>%
-    mrgsim(end=12, delta=0.1) %>%
-    dplyr::filter(row_number() != 1) 
-  
-  #get rid of ID because sensFun will take the first column as the time variable
-  out <- out %>% dplyr::select(-ID)  
-  return(out)
-}
+# graphical sensitivity for each parameter
+out_sens <- 
+  modA %>% 
+  ev(amt=amt, cmt=cmt, ii=ii, addl=addl, rate=rate, ss=ss) %>% 
+  select_par(all_of(names(Kp[-11]))) %>% 
+  parseq_fct(.n=3) %>% 
+  sens_each(delta = 0.1, recsort=3, obsonly=TRUE, end = 12)
 
-locSens <- sensFun(func=outFun, parms=parms, sensvar=sensvar, tiny=1e-4)
-summary(locSens)
+sens_plot(out_sens, "CP", grid = TRUE) 
 
-## summary plots
-plot(summary(locSens))
+# graphical sensitivity for a grid of parameters
+out_sens_grid <- 
+  modA %>% 
+  ev(amt=amt, cmt=cmt, ii=ii, addl=addl, rate=rate, ss=ss) %>% 
+  parseq_cv(Kpmu, Kplu, .n=3) %>% 
+  sens_grid(delta = 0.1, recsort=3, obsonly=TRUE, end = 12)
 
-# nicer view
-summ <- as_tibble(summary(locSens)) %>%
-  mutate(parms = names(parms)) 
+sens_plot(out_sens_grid, "CP")
 
-ggplot(data=summ, aes(x=reorder(parms, Mean), y=Mean)) + 
+# local sensitivity analysis 
+out_lsa <- lsa(modA, var = "CP", par = names(all_of(Kp[-11])), events = ev(amt=amt, cmt=cmt, ii=ii, addl=addl, rate=rate, ss=ss), end=12, delta=0.1, eps=1e-4)
+
+lsa_plot(out_lsa, pal = NULL)
+
+# get a summary of sensitivity coefficients
+out_lsa_summ <- out_lsa %>% 
+  group_by(p_name) %>%
+  summarise(mean_sens = mean(sens)) %>%
+  ungroup()
+
+ggplot(data=out_lsa_summ, aes(x=reorder(p_name, mean_sens), y=mean_sens)) + 
   geom_col() + 
   labs(x="Parameter", y="Coefficient") +
   coord_flip() +
   geom_hline(yintercept = 0, lty=2) +
-  theme_bw()
-
-## time-course sensitivity
-plot(locSens, which = c("CP"), xlab="time", lwd = 2)
-
-#nicer view
-df_temp <- as_tibble(locSens) %>%
-  gather(Parameter, Coefficient, -x, -var) %>%
-  mutate(Parameter = factor(Parameter)) %>%
-  rename(time=x) %>%
-  group_by(Parameter) %>%
-  mutate(Coefficient = Coefficient - first(Coefficient)) %>%
-  ungroup()
-
-ggplot(data=df_temp, aes(x=time, y=Coefficient, col=Parameter)) +
-  geom_line() +
-  theme(legend.position="right") +
-  facet_wrap(~var) +
   theme_bw()
 
 ################################################################################
@@ -498,11 +484,11 @@ OF <- function(pars, pred=F){
   names(pars) <- names(theta)
   
   ## Get a prediction
-  out <- as.data.frame(modA %>% 
-                         param(pars) %>%
-                         ev(cmt=cmt, amt=amt, rate=rate, ii=ii, addl=addl, ss=ss) %>%
-                         mrgsim(end=-1, add=sampl)
-  )
+  out <- modA %>% 
+    param(pars) %>%
+    ev(cmt=cmt, amt=amt, rate=rate, ii=ii, addl=addl, ss=ss) %>%
+    mrgsim(end=-1, add=sampl) %>%
+    as_tibble()
   
   out <- out[-1,] 
   
@@ -578,7 +564,7 @@ gp
 # at a rate of 3 mg/kg/h twice a day for seven days. Compare the steady state prediction 
 # before and after optimization to the observed data in `Pediatric_IV.csv`.
 
-obs <- read.csv("../data/source/Pediatric_IV.csv")  #load observed data
+obs <- read.csv("data/Pediatric_IV.csv")  #load observed data
 
 wt <- 19  #adult body weight
 amt <- 4*wt  
@@ -622,27 +608,25 @@ gp
 ################################################################################
 
 # Simulate a simple voriconazole dosing scenario for a population of 100 individuals, 
-# 50 males and 50 females, with ages ranging between 20-80, weights ranging between 
+# 50 females and 50 males, with ages ranging between 20-80, weights ranging between 
 # 50-100 kg and heights between 1.5 and 1.9 m. Use population saved in file 
-# `../data/derived/popPars_100.rds`
+# `data/popPars_100.rds`
 
 # load population params
-popPars <- readRDS("../data/derived/popPars_100.rds")
+popPars <- readRDS("data/popPars_100.rds")
 
-# add IIV on ka and CL/VmaxH
+# add IIV on CL/VmaxH
 set.seed(192898)
 iVmaxH <- rlnorm(100, meanlog=log(40), sdlog=0.2)
-ika <- rlnorm(100, meanlog=log(0.849), sdlog=0.2)
 
 # add to popPars
 popPars2 <- lapply(1:length(popPars), function(i){
   pars <- c(popPars[[i]],list(VmaxH = iVmaxH[i]))
-  pars <- c(pars, list(ka = ika[i]))
   return(pars)
 })
 
 # simulate
-modA2 <- mread("../model/voriPBPK2")
+modA2 <- mread("models/voriPBPK2.mod")
 Kpmu <- 0.56
 modA2 <- param(modA2, Kpmu=Kpmu)
 
@@ -670,8 +654,7 @@ data <- e %>%
 
 #run simulation
 system.time(sims <- modA2 %>% 
-              mrgsim_d(data=data, delta = delta, end = end, obsonly=T, outvars = c("CP")) %>% 
-              filter(row_number() != 1))
+              mrgsim_d(data=data, delta = delta, end = end, obsonly=T, outvars = c("CP"), output="df"))
 
 # get summary stats for population prediction
 hi95 <- function(x) quantile(x, probs = c(0.95))
@@ -686,7 +669,7 @@ sims2 <- sims %>%
   filter(ID == first(ID))
 
 #plot population predictions 
-gp <- ggplot(data = sims2, aes(x=time)) + 
+gp <- ggplot(data = sims2 %>% filter(row_number() != 1), aes(x=time)) + 
   geom_line(aes(y=medCP), col="black") +
   geom_ribbon(aes(ymin=loCP, ymax=hiCP), alpha = 0.5) +
   scale_y_continuous(trans = "log10") +
@@ -785,7 +768,7 @@ stats_4mg <- sims %>%
   slice(1) %>%
   ungroup() %>%
   mutate(FLG = ifelse(Cmin < 1, 1, 0))
-percLow_4mg <- (nrow(stats_4mg[stats_4mg$FLG==1,]) / nrow(stats_4mg)) * 100
+percHi_4mg <- (nrow(stats_4mg[stats_4mg$FLG==0,]) / nrow(stats_4mg)) * 100
 
 stats_3mg <- sims_3mg %>%
   filter(time != 0) %>%
@@ -794,10 +777,10 @@ stats_3mg <- sims_3mg %>%
   slice(1) %>%
   ungroup() %>%
   mutate(FLG = ifelse(Cmin < 1, 1, 0))
-percLow_3mg <- (nrow(stats_3mg[stats_3mg$FLG==1,]) / nrow(stats_3mg)) * 100 
+percHi_3mg <- (nrow(stats_3mg[stats_3mg$FLG==0,]) / nrow(stats_3mg)) * 100 
 
 stats_df <- tibble(Dose = c("3 mg/kg","4 mg/kg"),
-                   `Percent of subjects with SS Cmin < MIC` = c(percLow_3mg, percLow_4mg))
+                   `Percent of subjects with SS Cmin > MIC` = c(percHi_3mg, percHi_4mg))
 
 stats_df %>%
   knitr::kable() %>%
@@ -816,17 +799,17 @@ stats_df %>%
 # to run the same population simulation over parallel cores. How long does it take 
 # compared to the single core simulation?
 
-library(parallel)
 library(future)
 library(mrgsim.parallel)
 
 # set parallelization options
-options(future.fork.enable=TRUE, mc.cores = 6L)
-plan(multiprocess, workers = 6L)
+nCores <- future::availableCores()
+options(future.fork.enable=TRUE, mc.cores = nCores)
+plan(multicore, workers = nCores)
 
 #run simulation
 system.time(sims <- modA2 %>% 
-              future_mrgsim_d(data=data, nchunk = 6L, delta = delta, end = end, obsonly=T, outvars = c("CP")) %>% 
+              future_mrgsim_d(data=data, nchunk = nCores, delta = delta, end = end, obsonly=T, outvars = c("CP")) %>% 
               filter(row_number() != 1))
 
 # get summary stats for population
@@ -865,6 +848,47 @@ gp
 
 library(shiny)
 runApp("app.R")
+
+################################################################################
+################################################################################
+
+################################################################################
+################################## Chunk 20 ####################################
+################################################################################
+
+# Compile and run the mAb_bamlanivimab model
+# Plot drug concentration-time profile in plasma and lung tissue
+
+mod_mab <- mread("models/mAb_bamlanivimab.mod")
+
+# set up simulation conditions
+dose <- 700/150 #700 mg to umol
+dur <- 2
+rate <- dose/dur
+cmt <- 4
+end <- 28*24
+e <- ev(amt=dose, rate=rate, cmt=cmt)
+
+sim_mab <- mod_mab %>%
+  mrgsim_e(e, end=end, outvars=c("Cexg_Plasma", "Cexg_Lung_IS")) %>%
+  as_tibble() 
+
+sim_mab2 <- sim_mab %>%
+  mutate(time = time/24,
+         Plasma = Cexg_Plasma*150,
+         `Lung interstitial` = Cexg_Lung_IS*150) %>%
+  select(-Cexg_Plasma, -Cexg_Lung_IS) %>%
+  gather(tissue, conc, -ID, -time)
+
+# plot
+p_mab <- ggplot(data=sim_mab2, aes(x=time, y=conc, col=tissue)) +
+  geom_line(lwd=1) +
+  geom_hline(yintercept = 0.41481, lty=2) +
+  scale_x_continuous(breaks=seq(0, 28, 7)) +
+  scale_y_continuous(trans = "log10") +
+  labs(x="Time (d)", y=expression("mAb concentration ("*mu*"g/mL)")) +
+  theme_bw()
+p_mab
 
 ################################################################################
 ################################################################################

@@ -417,9 +417,6 @@ lung:plasma (`Kplu`) partition coefficients using adult IV data.
 
 ```{r}
 
-#load observed IV infusion data
-obs <- read.csv("data/Adult_IV.csv")
-
 #set simulation conditions
 bw   <- 73
 amt  <- 4*bw
@@ -471,8 +468,6 @@ What is the most influential parameter?
 library(mrgsim.sa)
 
 ### sensitivity analysis
-#set a list of the candidate parameters
-#parms <- list(Kpad = 9.89, Kpbo = 7.91, Kpbr = 7.35, Kpgu = 5.82, Kphe = 1.95, Kpki = 2.9, Kpli = 4.66, Kplu = 0.83, Kpmu = 2.94, Kpsp = 2.96) 
 
 #set the output variable of interest
 sensvar <- c("CP")  
@@ -538,8 +533,11 @@ library(nloptr)
 library(numDeriv)
 library(kableExtra)
 
+#load observed IV infusion data
+obs <- read.csv("data/Adult_IV.csv")
+
 ### optimization with maximum likelihood method
-theta <- log(c(Kpmu=2.94, sigma=1))  #initial parameter for MLE; mean and variance
+theta <- log(c(Kpmu=2.94, sigma=1))  #initial parameter for MLE; mean and standard deviation
 sampl <- obs$time                    #sampling times from observed data
 
 bw <- 73
@@ -557,11 +555,11 @@ OF <- function(pars, pred=F){
   names(pars) <- names(theta)
   
   ## Get a prediction
-  out <- as.data.frame(modA %>% 
-                         param(pars) %>%
-                         ev(cmt=cmt, amt=amt, rate=rate, ii=ii, addl=addl, ss=ss) %>%
-                         mrgsim(end=-1, add=sampl)
-  )
+  out <- modA %>% 
+    param(pars) %>%
+    ev(cmt=cmt, amt=amt, rate=rate, ii=ii, addl=addl, ss=ss) %>%
+    mrgsim(end=-1, add=sampl) %>%
+    as_tibble()
   
   out <- out[-1,] 
   
@@ -696,7 +694,7 @@ Meyer, Michaela, Sebastian Schneckener, Bernd Ludewig, Lars Kuepfer, and Joerg L
 # load population params
 popPars <- readRDS("data/popPars_100.rds")
 
-# add IIV on ka and CL/VmaxH
+# add IIV on CL/VmaxH
 set.seed(192898)
 iVmaxH <- rlnorm(100, meanlog=log(40), sdlog=0.2)
 
@@ -735,8 +733,7 @@ data <- e %>%
 
 #run simulation
 system.time(sims <- modA2 %>% 
-  mrgsim_d(data=data, delta = delta, end = end, obsonly=T, outvars = c("CP")) %>% 
-  filter(row_number() != 1))
+              mrgsim_d(data=data, delta = delta, end = end, obsonly=T, outvars = c("CP"), output="df"))
 
 # get summary stats for population prediction
 hi95 <- function(x) quantile(x, probs = c(0.95))
@@ -751,7 +748,7 @@ sims2 <- sims %>%
   filter(ID == first(ID))
 
 #plot population predictions 
-gp <- ggplot(data = sims2, aes(x=time)) + 
+gp <- ggplot(data = sims2 %>% filter(row_number() != 1), aes(x=time)) + 
   geom_line(aes(y=medCP), col="black") +
   geom_ribbon(aes(ymin=loCP, ymax=hiCP), alpha = 0.5) +
   scale_y_continuous(trans = "log10") +
@@ -872,7 +869,6 @@ Use the package `mrgsim.apply` (vignette: https://github.com/kylebaron/mrgsim.pa
 
 ```{r}
 
-#Sys.setenv(R_LIBS = "../renv/library")
 library(future)
 library(mrgsim.parallel)
 
@@ -883,7 +879,7 @@ plan(multicore, workers = nCores)
 
 #run simulation
 system.time(sims <- modA2 %>% 
-  future_mrgsim_d(data=data, nchunk = 6L, delta = delta, end = end, obsonly=T, outvars = c("CP")) %>% 
+  future_mrgsim_d(data=data, nchunk = nCores, delta = delta, end = end, obsonly=T, outvars = c("CP")) %>% 
   filter(row_number() != 1))
  
 # get summary stats for population
@@ -1000,12 +996,7 @@ p_mab <- ggplot(data=sim_mab2, aes(x=time, y=conc, col=tissue)) +
   scale_x_continuous(breaks=seq(0, 28, 7)) +
   scale_y_continuous(trans = "log10") +
   labs(x="Time (d)", y=expression("mAb concentration ("*mu*"g/mL)")) +
-  theme_bw() +
-  theme(legend.text = element_text(size = 15),
-        legend.title = element_text(size = 15),
-        axis.text = element_text(size=15),
-        axis.title = element_text(size=20),
-        title=element_text(size=20))
+  theme_bw()
 p_mab
 
 ```

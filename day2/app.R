@@ -45,7 +45,7 @@ server <- function(input, output) {
   output$PBPKPlot <- renderPlot({
     
     #load observed IV infusion data
-    obs <- read.csv("../data/source/Adult_IV.csv")
+    obs <- read.csv("data/Adult_IV.csv")
     
     #set simulation conditions
     bw   <- 73
@@ -56,7 +56,7 @@ server <- function(input, output) {
     addl <- 13
     ss   <- 1
     
-    modA <- mread("../model/voriPBPK")
+    modA <- mread("models/voriPBPK.mod")
     
     #run simulation
     sim <- 
