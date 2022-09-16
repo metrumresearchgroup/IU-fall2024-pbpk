@@ -1,6 +1,6 @@
 
 all:
-	make models
+	#make models
 	cd slides/rmd && Rscript ../../src/build.R && cp slides.html ../
 
 rif: 
