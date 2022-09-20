@@ -533,51 +533,63 @@ library(nloptr)
 library(numDeriv)
 library(kableExtra)
 
+### Do some data assembly to create dataset for optimization
+
 #load observed IV infusion data
+bw <- 73
 obs <- read.csv("data/Adult_IV.csv")
 
-### optimization with maximum likelihood method
-theta <- log(c(Kpmu=2.94, sigma=1))  #initial parameter for MLE; mean and standard deviation
-sampl <- obs$time                    #sampling times from observed data
+# create an nm-tran dataset
+nm_dv <- obs %>%
+  select(time, dv=obs) %>%
+  mutate(ID = 1,
+         amt = 0,
+         rate = 0,
+         cmt = "VEN",
+         evid = 0,
+         ii = 0,
+         addl = 0,
+         ss = 0)
 
-bw <- 73
-amt = 4*bw
-rate = 4*bw
-cmt = "VEN"
-ii = 12
-addl = 13
-ss = 1
+nm_dose <- nm_dv %>%
+  slice(1) %>%
+  mutate(amt = 4*bw,
+         rate = 4*bw,
+         ii = 12,
+         addl = 13,
+         ss = 1,
+         dv = NA,
+         evid = 1)
+
+nm <- bind_rows(nm_dose, nm_dv) %>% arrange(time)
 
 ##set up objective function
-OF <- function(pars, pred=F){
+OF <- function(pars, dat, pred=F){
   pars <- lapply(pars,exp)  #Get out of log domain for MLE
   pars <- as.list(pars)
   names(pars) <- names(theta)
   
   ## Get a prediction
-  out <- modA %>% 
-    param(pars) %>%
-    ev(cmt=cmt, amt=amt, rate=rate, ii=ii, addl=addl, ss=ss) %>%
-    mrgsim(end=-1, add=sampl) %>%
-    as_tibble()
-  
-  out <- out[-1,] 
+  out <- modA %>% param(pars) %>% mrgsim_d(dat, carry_out=c("dv"), output="df")
   
   if(pred) return(out)
   
   ##OLS
-  #return(sum((out$Cvenous - obs$obs)^2))
+  #return(sum((out$CP - out$dv)^2))
   
   ##maximum likelihood
-  return(-1*sum(dnorm(log(obs$obs),
+  return(-1*sum(dnorm(log(out$dv),
                       mean=log(out$CP),
-                      sd=pars$sigma, log=TRUE)))
+                      sd=pars$sigma, log=TRUE), na.rm = T))
 }
+
+# set initial values
+theta <- log(c(Kpmu=2.94, sigma=1))  #initial parameter for MLE; mean and standard deviation
 
 ##Fit with nloptr package
 ##derivative-free optimizers
 #fit <- neldermead(theta, OF)  #Nelder-Mead simplex
-fit <- newuoa(theta, OF)  #New Unconstrained Optimization with quadratic Approximation
+fit <- newuoa(theta, OF, dat=nm)  #New Unconstrained Optimization with quadratic Approximation
 
 ##gradient-basd optimizers
 #fit <- tnewton(theta, OF)  #Local optimizer; Nelder-Mead simplex
@@ -593,7 +605,7 @@ names(p) <- names(theta)
 p
 
 # get standard error and confidence intervals around the estimated parameters
-h <- hessian(OF, fit$par)
+h <- hessian(OF, fit$par, dat=nm)
 vc_log <- solve(h)  #variance-covariance matrix
 SE_log <- sqrt(diag(vc_log))  #standard error on log scale
 
@@ -611,8 +623,8 @@ paramSumm %>%
   kable_styling()
 
 # compare initial predictions to those using the optimized parameters
-predB4 <- OF(theta, pred=T)
-predAfter <- OF(fit$par, pred=T)
+predB4 <- OF(theta, dat=nm, pred=T)
+predAfter <- OF(fit$par, dat=nm, pred=T)
 
 gp <- ggplot() +
   geom_point(data=obs, aes(x=time, y=obs)) + 
