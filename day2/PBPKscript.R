@@ -413,7 +413,7 @@ out_sens <-
   parseq_fct(.n=3) %>% 
   sens_each(delta = 0.1, recsort=3, obsonly=TRUE, end = 12)
 
-sens_plot(out_sens, "CP", grid = TRUE) 
+sens_plot(out_sens, "CP") 
 
 # graphical sensitivity for a grid of parameters
 out_sens_grid <- 
@@ -871,8 +871,8 @@ runApp("app.R")
 ################################## Chunk 20 ####################################
 ################################################################################
 
-# Compile and run the mAb_bamlanivimab model
-# Plot drug concentration-time profile in plasma and lung tissue
+# Compile the mAb bamlanivimab mAb model and simulate a single 700 mg IV infusion dose infused over 2 hours. 
+# What are the drug concentrations in plasma and lung on day 28? How do they compare to bamlanivimab IC90 (0.41481 mcg/mL)?
 
 mod_mab <- mread("models/mAb_bamlanivimab.mod")
 
