@@ -29,8 +29,6 @@ library(PKPDmisc)
 library(sensitivity)
 ```
 
-
-
 # The sunitinib PK model
 ```{r}
 mod <- mread_cache("sunit", "model") %>% 

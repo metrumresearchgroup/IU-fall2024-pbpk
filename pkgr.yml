@@ -1,0 +1,29 @@
+Version: 1
+Packages:
+  - bitops
+  - caTools
+  - tidyverse
+  - mrgsolve
+  - nloptr
+  - numDeriv
+  - knitr
+  - kableExtra
+  - cowplot
+  - mrgsim.sa
+  - sensitivity
+  - shiny
+  - future
+  - future.apply
+  - mrgsim.parallel
+  - PKNCA
+  - rmarkdown
+  - shiny
+  
+Repos:
+  - MPN: https://mpn.metworx.com/snapshots/stable/2022-08-31/
+  - CRAN: https://cran.rstudio.com
+
+Library: rlibs
+
+# Lockfile:
+#     Type: renv
