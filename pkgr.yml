@@ -17,7 +17,10 @@ Packages:
   - mrgsim.parallel
   - PKNCA
   - rmarkdown
+  - markdown
   - shiny
+  - here
+  - ggthemes
   
 Repos:
   - MPN: https://mpn.metworx.com/snapshots/stable/2022-08-31/
