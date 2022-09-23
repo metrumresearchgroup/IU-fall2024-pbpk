@@ -12,7 +12,7 @@ rm(list = ls())
 
 #' - Check the parameter values (`param`)
 #' - Check the compartments and initial values (`init`)
-#' - Review the model code (`see)
+#' - Review the model code (`see`)
 
 mod <- mread_cache()
 

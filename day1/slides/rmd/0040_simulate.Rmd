@@ -1,0 +1,153 @@
+
+```{r, include = FALSE}
+source(here("day1/src/global.R"))
+library(mrgsolve)
+library(dplyr)
+library(knitr)
+library(lattice)
+tryit_file <- "workbook.Rmd"
+```
+
+```{r  echo = FALSE, message = FALSE}
+mod <- mread_cache("pk1", modlib()) %>% 
+  update(end = 192, delta = 0.2) %>% Req(CP)
+data(exidata)
+data <- filter(exidata, ID <=10)
+set.seed(1222)
+```
+
+# Simulate
+
+```{r, echo = FALSE, message = FALSE}
+mod <- mread_cache("effect", modlib())
+```
+
+
+<hr>
+
+`model %>% intervention %>%` <grn>Go!</grn>
+
+<hr>
+
+
+
+```{r}
+e <- ev(amt = 100)
+
+mod %>% ev(e) %>% mrgsim()
+```
+
+
+```{r, eval = FALSE}
+mrgsim(mod, events = e)
+```
+
+# What would you like to "fix" in this plot?
+
+```{r,echo= FALSE}
+mod <- update(mod, end = 18, delta = 6)
+```
+
+```{r}
+mod %>% ev(amt = 100) %>% mrgsim() %>% plot(CP~time)
+```
+
+# Simulation end time
+```{r}
+mod %>% ev(amt = 100) %>% mrgsim(end = 48) %>% plot(CP~time)
+```
+
+# Simulation time step
+```{r}
+mod %>% ev(amt = 100) %>% mrgsim(end = 48, delta = 0.1) %>% plot(CP~time)
+```
+
+
+# Simulation time grid
+
+-  To form a sequence of times
+    - <grn>start</grn> usually `0`
+    - <grn>end</grn> time of last observation
+    - <grn>delta</grn> <blk>output</blk> time step
+-  Additional times to simulate
+    - <purp>add</purp> ad-hoc numeric vector
+    
+```{r}
+stime(mod)
+```
+
+# We're stil working on this setup
+
+<hr>
+
+<red>model</red> `%>%` <blu>intervention</blu> `%>%` <grn>Go!</grn> `%>%` <orng>take-a-look</orng> 
+
+<hr>
+
+<red>model</red>:
+
+- Load a model with `mread` or `mread_cache`
+- Use the internal library with `mread("<model-name>", modlib())`
+- Check model parameters with `param(mod)`
+- Check model initial conditions with `init(mod)`
+- View model code with `see(mod)`
+
+<blu>intervention</blu>:
+
+- `ev(...`): `amt`, `cmt`, `time`, `ii`, `addl`, `rate`
+- Different ways to combine event objects
+
+
+
+# Working with simulated output
+
+<hr>
+
+`model %>% intervention %>% Go! %>%` <orng>take-a-look</orng> 
+
+<hr>
+
+# Plot
+
+```{r}
+mod <- mread_cache("effect", modlib())
+
+mod %>% ev(amt = 100) %>% mrgsim() %>% plot()
+```
+
+# Plot
+
+```{r}
+mod %>% ev(amt = 100) %>% mrgsim() %>% 
+  plot(CP + EFFECT~., col = "firebrick")
+```
+
+# Pipeline to dplyr functions
+
+```{r}
+mod %>% mrgsim() %>% mutate(arm = 1)
+```
+
+# Controlling output - <grn>request</grn>
+
+```{r}
+mod %>% mrgsim() %>% head(n = 2)
+```
+
+```{r}
+mod %>% Req(CP) %>% mrgsim() %>% head(n = 2)
+```
+
+
+# Controlling output - <grn>obsonly</grn>
+```{r}
+mod %>% ev(amt=1) %>% mrgsim() %>% head(n = 2)
+```
+
+```{r}
+mod %>% ev(amt=1) %>% obsonly() %>% mrgsim() %>% head(n = 2)
+```
+
+
+
+
