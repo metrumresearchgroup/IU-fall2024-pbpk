@@ -1,0 +1,8 @@
+build
+.Rproj.user
+.DS_Store
+rlibs
+.Rhistory
+day1/slides/rmd/slides.html
+day1/slides/rmd/slides_files
+day1/slides/rmd/master_cache
