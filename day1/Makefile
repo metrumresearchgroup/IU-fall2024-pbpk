@@ -1,7 +1,7 @@
 
 all:
 	#make models
-	cd slides/rmd && Rscript ../../src/build.R && cp slides.html ../
+	cd slides/rmd && Rscript ../../src/build.R && cp slides.html ../../
 
 rif: 
 	Rscript -e 'rmarkdown::render("exercises/rifampin_midazolam_ddi.Rmd", output_dir = "exercises/answers")'

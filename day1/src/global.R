@@ -1,4 +1,4 @@
-#.libPaths("/data/Rlibs")
+
 options(mrgsolve.soloc = "build")
 knitr::opts_chunk$set(
   comment = '.', 
@@ -8,3 +8,6 @@ knitr::opts_chunk$set(
   message = FALSE
 )
 ggplot2::theme_set(ggplot2::theme_bw())
+.day1 <- function(...) {
+  here::here("day1", ...)
+}

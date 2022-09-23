@@ -1,0 +1,304 @@
+---
+title: Estimate parameters in a PBPK model
+author: "Metrum Research Group"
+date: ""
+---
+
+# Packages and setup
+
+```{r, message = FALSE}
+library(tidyverse)
+library(mrgsolve)
+library(PKPDmisc)
+library(minqa)
+library(DEoptim)
+library(GenSA)
+library(hydroPSO)
+source("../src/functions.R")
+
+set.seed(10101)
+
+theme_set(theme_bw())
+theme_update(legend.position = "top")
+scale_colour_discrete <- function(...) scale_color_brewer(palette="Set2")
+```
+
+Models are located here:
+```{r}
+model_dir <- "../model"
+```
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(comment = '.', message = FALSE, warning = FALSE) 
+```
+
+# Reference
+__Quantitative Analyses of Hepatic OATP-Mediated Interactions Between Statins and Inhibitors Using PBPK Modeling With a Parameter Optimization Method__
+
+- T Yoshikado, K Yoshida, N Kotani, T Nakada, R Asaumi, K Toshimoto, K Maeda, H Kusuhara and Y Sugiyama
+
+- CLINICAL PHARMACOLOGY & THERAPEUTICS | VOLUME 100 NUMBER 5 | NOVEMBER 2016 
+
+- https://www.ncbi.nlm.nih.gov/pubmed/27170342
+
+
+# Data
+
+- Example taken from figure 4a from the publication
+- Using this as example data to fit
+```{r, message = FALSE}
+data.file <- file.path("../", "data", "fig4a.csv")
+
+data <-
+  data.file %>% 
+  read_csv() %>% 
+  mutate(
+    profile = NULL, 
+    type=ID, 
+    typef=factor(ID, labels = c("Statin", "Statin+CsA"))
+  )
+```
+
+- The goal is to fit the pitavastatin data either alone (left) or 
+in combination with cyclosporin administered 1 hour before the 
+pitavastatin
+
+```{r}
+ggplot(data=data,aes(time,DV)) + 
+  geom_point(aes(col = typef), size = 3) + 
+  geom_line(col = "darkgrey", aes(group = typef)) + 
+  scale_y_continuous(trans="log", limits=c(0.1,300), breaks=logbr()) 
+```
+
+- Pick out the doses and the observations
+
+```{r}
+dose <- filter(data,evid==1) %>% mutate(typef=NULL)
+
+dose 
+
+yobs <- filter(data,evid==0) %>% dplyr::select(DV) %>% unlist %>% unname
+
+yobs
+
+data <-  dplyr::select(data, -typef)
+```
+
+
+
+# PBPK model: pitavastatin / CsA DDI
+
+- Check out the model / data with a quick simulation
+- We're only interested in `CP`, the pitavastatin concentration
+
+```{r, message = FALSE, cache = FALSE}
+mod <- mread_cache("yoshikado",model_dir) %>% 
+  update(end=14, delta=0.1) %>% 
+  Req(CP) %>% 
+  obsonly()
+
+sims <- 
+  mod %>% 
+  mrgsim(data=dose,obsaug=TRUE) %>% 
+  mutate(type = typef(ID))
+
+ggplot(sims, aes(time,CP,col=type)) + 
+  geom_line(lwd = 1) + 
+  scale_x_continuous(breaks = seq(0,12,2)) + 
+  scale_y_continuous(trans = "log10", name = "Pitavastatin concentration")
+```
+
+```{r}
+sims %>% 
+  group_by(type) %>% 
+  summarise(auc = auc_partial(time,CP)) %>% 
+  mutate(fold_increase = auc /first(auc))
+```
+
+
+# Objective function
+
+- Least squares objective function
+- Weighted by the observations
+
+```{r}
+wss <- function(dv, pred, par=NULL) {
+  sum(((dv-pred)/dv)^2) ## dnorm(yobs, yhat, sd, log = TRUE)
+}
+```
+
+### Prediction function
+
+- Let's go through step by step what each line is doing for us
+
+```{r}
+pred <- function(p, .data, yobs=NULL, pred=FALSE) {
+  
+  .par <- lapply(p,exp) %>% setNames(names(theta))
+  
+  .mod <- param(mod,.par)
+  
+  if(pred) {
+    out <- mrgsim(.mod,data=.data,carry.out="type")
+    return(as_tibble(out))
+  }
+  
+  out <- mrgsim(.mod, data=.data, obsonly=TRUE, Req="CP")
+  
+  return(wss(yobs,out$CP))
+  
+  #return(-1*sum(dnorm(log(yobs),log(out$CP),.par$sigma,log=TRUE)))
+  
+}
+```
+
+
+# Optimize with different methods
+
+## `minqa::newuoa`: minimization without derivatives
+
+- These appear to be the parameters that the authors are fitting
+
+```{r}
+theta <- log(c(fbCLintall = 1.2, ikiu = 1.2, 
+               fbile = 0.9, ka = 0.1, ktr = 0.1))
+
+control <- list(iprint=25)
+
+fit1 <- newuoa(theta, pred,.data=data, yobs=yobs,control=control)
+
+fit1$par <- setNames(fit1$par,names(theta))
+```
+
+### Get some predictions to look at how the fit went
+
+- Predictions with the final estimates
+- Predications with the initial estimates
+- Observed data to overlay
+
+```{r}
+df_pred <- pred(fit1$par,dose,pred=TRUE) %>% mutate(type = typef(type))
+df_init <- pred(theta,dose,pred=TRUE) %>% mutate(type = typef(type))
+df_obs <- mutate(data, type=typef(type))
+```
+
+### Plot
+```{r}
+ggplot(data=df_pred) + 
+  geom_line(data=df_init,aes(time,CP,lty="A"), col="black", lwd=0.7) +
+  geom_line(aes(time,CP,lty="B"),col="black",lwd=0.7) + 
+  geom_point(data=df_obs,aes(time,DV,col=type),size=3) + 
+  facet_wrap(~type) + 
+  scale_y_continuous(trans="log",breaks=10^seq(-4,4), 
+                     limits=c(0.1,100),
+                     "Pitavastatin concentration (ng/mL)") +
+  scale_x_continuous(name="Time (hours)", breaks=seq(0,14,2)) +
+  scale_linetype_manual(values= c(2,1), guide = FALSE,
+                        labels=c("Initial estimates", "Final estimates"), name="") +
+  theme_bw() + theme(legend.position="top") 
+```
+
+### The final objective function value and estimates
+```{r}
+pred(fit1$par,.data=data,yobs=yobs)
+
+exp(fit1$par)
+```
+
+## `optim`: Nelder-Mead
+
+```{r}
+fit1b <- optim(theta, pred,.data=data, yobs=yobs)
+```
+
+## `DEoptim`: differential evolution algorithm
+
+"Performs evolutionary global optimization via the 
+Differential Evolution algorithm."
+
+```{r}
+lower <- rep(-6,length(theta)) %>% setNames(names(theta))
+upper <- rep(5, length(theta)) %>% setNames(names(theta))
+
+set.seed(330303)
+
+decontrol <- DEoptim.control(
+  NP=10*length(theta), 
+  CR=0.925, 
+  F=0.85,
+  itermax=90, 
+  storepopfrom=0
+)
+
+fit2 <- DEoptim(
+  fn=pred, 
+  lower=lower,
+  upper=upper, 
+  control=decontrol,
+  .data=data, 
+  yobs=yobs
+)
+
+```
+
+### DA for the plot
+```{r, eval = TRUE}
+pops <- lapply(fit2$member$storepop, as.data.frame)
+hx <- bind_rows(pops)
+hx <- mutate(hx, iteration=rep(1:decontrol$itermax,each=decontrol$NP))
+hx <- mutate(hx, pop = rep(1:decontrol$NP, time=decontrol$itermax))
+hxm <- gather(hx, variable, value, 1:5) %>% mutate(value = exp(value))
+best <- as_tibble(fit2$member$bestmemit) %>% 
+  mutate(iteration = 1:decontrol$itermax)
+bestm <- gather(best,variable,value,1:5) %>% mutate(value = exp(value))
+```
+
+```{r, eval = TRUE, fig.width = 8}
+ggplot(data=hxm) + 
+  geom_line(aes(iteration,value,group=pop),col="darkslateblue") + 
+  geom_line(data=bestm,aes(iteration,value),col="orange",lwd=1) + 
+  scale_y_continuous(trans="log", breaks=10^seq(-4,4), name="Parameter value") + 
+  facet_wrap(~variable, ncol=2, scales="free_y") + theme_bw()
+```
+
+
+## `GenSA`: simulated annealing 
+```{r}
+set.seed(11001)
+
+sacontrol <- list(maxit = 100, nb.stop.improvement = 20, verbose = TRUE)
+
+fit3 <- GenSA(
+  NULL, pred, lower, upper, .data = data, yobs = yobs, 
+  control = sacontrol
+)
+```
+
+## `hydroPSO`: particle swarm optimization
+```{r}
+set.seed(2202201)
+
+fit4 <- hydroPSO(
+  theta, fn = "pred", lower = lower, upper = upper, 
+  control = list(maxit = 100, REPORT = 5),
+  .data = data, yobs = yobs
+)
+```
+
+# Compare optimization methods
+```{r}
+results <- list(theta, fit1$par, fit1b$par, fit2$optim$bestmem, fit3$par, fit4$par)
+
+results <- map(results, exp)
+
+tibble(
+  method = c("initial", "newuoa", "nelder", "DEoptim", "SA", "PSO"),
+  fbCLintall = map_dbl(results, "fbCLintall"), 
+  ikiu = map_dbl(results, "ikiu"), 
+  fbile = map_dbl(results, "fbile"), 
+  ka = map_dbl(results, "ka"), 
+  ktr = map_dbl(results, "ktr")
+) %>%  knitr::kable(digits = 4)
+
+```
+

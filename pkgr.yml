@@ -21,6 +21,7 @@ Packages:
   - shiny
   - here
   - ggthemes
+  - FME
   
 Repos:
   - MPN: https://mpn.metworx.com/snapshots/stable/2022-08-31/

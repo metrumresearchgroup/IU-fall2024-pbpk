@@ -1,7 +1,8 @@
 
 # Warm-Up  ---------------------------------------------------
 
-source("src/global.R")
+library(here)
+source(here("day1/src/global.R"))
 library(dplyr)
 library(mrgsolve)
 rm(list = ls())
