@@ -12,6 +12,7 @@ Packages:
   - cowplot
   - mrgsim.sa
   - sensitivity
+  - sensobol
   - shiny
   - future
   - future.apply

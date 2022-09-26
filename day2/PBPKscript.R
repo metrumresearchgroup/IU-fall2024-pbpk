@@ -445,6 +445,55 @@ ggplot(data=out_lsa_summ, aes(x=reorder(p_name, mean_sens), y=mean_sens)) +
 ################################################################################
 ################################################################################
 
+################################################################################
+################################## Chunk 13 ####################################
+################################################################################
+
+library(sensobol)
+library(future)
+library(mrgsim.parallel)
+
+# set parallelization options
+nCores <- future::availableCores()
+options(future.fork.enable=TRUE, mc.cores = nCores)
+plan(multicore, workers = nCores)
+
+# generate parameter sets
+N <- 100  # initial sample number
+mat <- sobol_matrices(N = N, params = c("Kpmu","Kplu","Kpli","Kpsp"))  # creates sample variates between 0-1
+head(mat)
+
+#Transform and groom
+params <- unlist(as.list(param(modA))[c("Kpmu","Kplu","Kpli","Kpsp")])
+umin <- params / 3
+umax <- params * 3
+umin
+umax
+
+# get samples by applying quantile to the uniform distributed matrix
+mat <- as_tibble(mat)
+mat2 <- imodify(mat, ~ qunif(.x, umin[[.y]], umax[[.y]]))
+mat2 <- mutate(mat2, ID = row_number())
+head(mat2)
+
+# run the analysis
+## serial
+system.time(out <- modA %>% future_mrgsim_ei(e, mat2, nchunk = nCores, end = 1, delta = 1, Request = c("CP"), rtol = 1e-4, output = "df"))
+
+# calculate Cmax
+y <- out %>% group_by(ID) %>% summarise(cmax = max(CP)) %>% ungroup()
+y <- as.numeric(y$cmax)
+
+# get indices
+ind <- sobol_indices(Y = y, N = N, params = names(params), boot = TRUE, R = 1000, first = "jansen")
+ind.dummy <- sobol_dummy(Y = y, N = N, params = names(params), boot = TRUE, R = 1000)  # dummy to assess numerical approximation error
+
+# plot indices
+plot(ind, dummy = ind.dummy) + ylim(0,1)
+
+################################################################################
+################################################################################
+
 #------------------------------------------------------------------------------#
 
 ### Parameter estimation ###
@@ -874,7 +923,7 @@ runApp("app.R")
 # Compile the mAb bamlanivimab mAb model and simulate a single 700 mg IV infusion dose infused over 2 hours. 
 # What are the drug concentrations in plasma and lung on day 28? How do they compare to bamlanivimab IC90 (0.41481 mcg/mL)?
 
-mod_mab <- mread("models/mAb_bamlanivimab.mod")
+mod_mab <- mread("models/mAb.mod")
 
 # set up simulation conditions
 dose <- 700/150 #700 mg to umol
@@ -891,7 +940,7 @@ sim_mab <- mod_mab %>%
 sim_mab2 <- sim_mab %>%
   mutate(time = time/24,
          Plasma = Cexg_Plasma*150,
-         `Lung interstitial` = Cexg_Lung_IS*150) %>%
+         Lung = Cexg_Lung_IS*150) %>%
   select(-Cexg_Plasma, -Cexg_Lung_IS) %>%
   gather(tissue, conc, -ID, -time)
 
@@ -908,4 +957,100 @@ p_mab
 ################################################################################
 ################################################################################
 
+################################################################################
+################################## Chunk 21 ####################################
+################################################################################
+
+# Use the mAb model as a template to add a simple tumor model. 
+# Save a new model file, compile, run a quick simulation, and plot mAb tumor 
+# concentration-time profile for 28 days.
+
+lines_mod <- read_lines("models/mAb.mod")
+
+lines_muscle <- lines_mod[str_detect(lines_mod, "Muscle")]
+lines_tumor <- str_replace_all(lines_muscle, "Muscle", "Tumor")
+
+# tumor-specific modifications
+## param
+lines_tumor[str_detect(lines_tumor, "^V_Tumor =")] <- "V_Tumor = 0.02 // [L] Total Volume"
+lines_tumor[str_detect(lines_tumor, "^V_Tumor_IS =")] <- "V_Tumor_IS = 0.55*0.02  // [L] Interstitial Volume"
+lines_tumor[str_detect(lines_tumor, "^V_Tumor_V =")] <- "V_Tumor_V = 0.07*0.02 // [L] Vascular Volume"
+lines_tumor[str_detect(lines_tumor, "^PLQ_Tumor =")] <- "PLQ_Tumor = 12.7*0.02 // [L/h] blood flow rate" 
+lines_tumor[str_detect(lines_tumor, "^Endothelial_Cell_Frac_Tumor =")] <- "Endothelial_Cell_Frac_Tumor = 0.005"
+lines_tumor[str_detect(lines_tumor, "^SV_Tumor =")] <- "SV_Tumor = 0.842"
+lines_tumor[str_detect(lines_tumor, "^SIS_Tumor =")] <- "SIS_Tumor = 0.2"
+
+## MAIN
+lines_tumor[str_detect(lines_tumor, "^double FcRn_Conc =")] <- ""
+
+## ODE
+lines_tumor[str_detect(lines_tumor, "\\(1.0 - SIS_Tumor\\)")] <- "" 
+lines_tumor[str_detect(lines_tumor, "\\+ \\(PLQ_Tumor - LF_Tumor\\)\\*Cexg_Tumor_V")] <- ""  # remove the Tumor entry to Aexg; will be patched later
+
+# original model modifications
+## PARAM
+lines_mod[str_detect(lines_mod, "^PLQ_Lung = 181.913000000")] <- "PLQ_Lung = 181.9130000000000109 + (12.7*0.02) // [L/h]"
+
+## MAIN
+lines_mod[str_detect(lines_mod, "^double FcRn_Conc =")] <- paste0(str_remove(lines_mod[str_detect(lines_mod, "^double FcRn_Conc =")], "\\);"), "+V_endosomal_Tumor);")
+
+## ODE
+lines_mod[str_detect(lines_mod, "\\- L_LymphNode\\*Cedg_LN\\)/V_LN;")] <- "- L_LymphNode*Cedg_LN + (1.0 - SIS_Tumor)*LF_Tumor*Cedg_Tumor_IS)/V_LN;"
+lines_mod[str_detect(lines_mod, "\\- L_LymphNode\\*Cexg_LN\\)/V_LN;")] <- "- L_LymphNode*Cexg_LN + (1.0 - SIS_Tumor)*LF_Tumor*Cexg_Tumor_IS)/V_LN;"
+lines_mod[str_detect(lines_mod, "\\+ L_LymphNode\\*Cexg_LN\\);")] <- "+ L_LymphNode*Cexg_LN + (PLQ_Tumor - LF_Tumor)*Cexg_Tumor_V);"
+
+# join lines
+lines_mod_new <- 
+  # PROB, SET, and PARAM
+  lines_mod[1:str_which(lines_mod, "\\[ MAIN \\]") - 1] %>%  
+  append(lines_tumor[1:str_which(lines_tumor, "SIS_Tumor = 0.2")]) %>%
+  # MAIN
+  append(lines_mod[str_which(lines_mod, "\\[ MAIN \\]"):(str_which(lines_mod, "\\[ CMT \\]") - 1)]) %>% 
+  append(lines_tumor[str_which(lines_tumor, "double LF_Tumor = PLQ_Tumor\\*0.002"):str_which(lines_tumor, "CFcRn_Tumor_IM_0 = FcRn_Conc\\*1e-4;")]) %>%
+  # CMT
+  append(lines_mod[str_which(lines_mod, "\\[ CMT \\]"):(str_which(lines_mod, "\\[ ODE \\]") - 1)]) %>%
+  append(lines_tumor[str_which(lines_tumor, "^Cedg_Tumor_V$"):str_which(lines_tumor, "^CFcRn_Tumor_IM$")]) %>%
+  # ODE
+  append(lines_mod[str_which(lines_mod, "\\[ ODE \\]"):(str_which(lines_mod, "\\[ CAPTURE \\]") - 1)]) %>%
+  append(lines_tumor[str_which(lines_tumor, "dxdt_Cexg_Tumor_V ="):str_which(lines_tumor, "2.0\\*kdeg_FcRn_Ab\\*Cedg_Tumor_b2IM\\)\\)/V_Tumor_IM;")]) %>%
+  # CAPTURE
+  append(lines_mod[str_which(lines_mod, "\\[ CAPTURE \\]"):length(lines_mod)])
+
+# save
+write_lines(lines_mod_new, "mAb_tumor.mod")
+
+# compile
+mod_mab_tumor <- mread("mAb_tumor.mod")
+
+# run simulation
+
+# set up simulation conditions
+dose <- 700/150 #700 mg to umol
+dur <- 2
+rate <- dose/dur
+cmt <- 4
+end <- 28*24
+e <- ev(amt=dose, rate=rate, cmt=cmt)
+
+sim_mab_tumor <- mod_mab_tumor %>%
+  mrgsim_e(e, end=end, outvars=c("Cexg_Plasma", "Cexg_Tumor_IS")) %>%
+  as_tibble() 
+sim_mab_tumor2 <- sim_mab_tumor %>%
+  mutate(time = time/24,
+         Plasma = Cexg_Plasma*150,
+         Tumor = Cexg_Tumor_IS*150) %>%
+  select(-Cexg_Plasma, -Cexg_Tumor_IS) %>%
+  gather(tissue, conc, -ID, -time)
+
+# plot
+p_mab_tumor <- ggplot(data=sim_mab_tumor2 %>% filter(tissue != "Lung"), aes(x=time, y=conc, col=tissue)) +
+  geom_line(lwd=1) +
+  scale_x_continuous(breaks=seq(0, 28, 7)) +
+  scale_y_continuous(trans = "log10") +
+  labs(x="Time (d)", y=expression("mAb concentration ("*mu*"g/mL)")) +
+  theme_bw()
+p_mab_tumor
+
+################################################################################
+################################################################################
 
