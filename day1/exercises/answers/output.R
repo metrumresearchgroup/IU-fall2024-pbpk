@@ -1,14 +1,14 @@
 
 # Output answer ----------------------------------------
 
-source("src/global.R")
+source(here("day1/src/global.R"))
 library(dplyr)
 library(mrgsolve)
 rm(list = ls())
 
 #' Run the following code and check the output
 
-mod <- mread_cache("azithro", "model")
+mod <- mread_cache("azithro", here("day1/model"))
 
 out <- 
   mod %>% 

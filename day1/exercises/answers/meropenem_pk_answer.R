@@ -1,7 +1,7 @@
 
 # Meropenem PK answer ----------------------------------
 
-source("src/global.R")
+source(here("day1/src/global.R"))
 library(dplyr)
 library(mrgsolve)
 
@@ -12,7 +12,7 @@ library(mrgsolve)
 #'   
 #' Look at the `CC` output
 
-mod <- mread("meropenem", "model")
+mod <- mread("meropenem", here("day1/model"))
 
 mod %>% 
   ev(amt = 100, ii = 8, addl = 2) %>%

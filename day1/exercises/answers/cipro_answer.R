@@ -10,7 +10,7 @@ library(purrr)
 
 # Cipro PK: warm-up ------------------------------------
 
-mod <- mread("cipro", "model")
+mod <- mread("cipro", here("day1/model"))
 
 mod
 

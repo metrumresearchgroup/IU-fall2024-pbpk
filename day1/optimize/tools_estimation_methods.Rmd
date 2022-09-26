@@ -14,7 +14,8 @@ library(minqa)
 library(DEoptim)
 library(GenSA)
 library(hydroPSO)
-source("../src/functions.R")
+library(here)
+source(here("day1/src/functions.R"))
 
 set.seed(10101)
 
@@ -25,7 +26,7 @@ scale_colour_discrete <- function(...) scale_color_brewer(palette="Set2")
 
 Models are located here:
 ```{r}
-model_dir <- "../model"
+model_dir <- here("day1/model")
 ```
 
 ```{r, echo = FALSE}
@@ -47,7 +48,7 @@ __Quantitative Analyses of Hepatic OATP-Mediated Interactions Between Statins an
 - Example taken from figure 4a from the publication
 - Using this as example data to fit
 ```{r, message = FALSE}
-data.file <- file.path("../", "data", "fig4a.csv")
+data.file <- here("day1/data/fig4a.csv")
 
 data <-
   data.file %>% 
@@ -92,7 +93,7 @@ data <-  dplyr::select(data, -typef)
 - We're only interested in `CP`, the pitavastatin concentration
 
 ```{r, message = FALSE, cache = FALSE}
-mod <- mread_cache("yoshikado",model_dir) %>% 
+mod <- mread_cache("yoshikado", model_dir) %>% 
   update(end=14, delta=0.1) %>% 
   Req(CP) %>% 
   obsonly()
@@ -269,30 +270,29 @@ set.seed(11001)
 sacontrol <- list(maxit = 100, nb.stop.improvement = 20, verbose = TRUE)
 
 fit3 <- GenSA(
-  NULL, pred, lower, upper, .data = data, yobs = yobs, 
+  NULL, pred, lower + 0.5, upper - 0.5, .data = data, yobs = yobs, 
   control = sacontrol
 )
 ```
 
-## `hydroPSO`: particle swarm optimization
-```{r}
-set.seed(2202201)
-
-fit4 <- hydroPSO(
-  theta, fn = "pred", lower = lower, upper = upper, 
-  control = list(maxit = 100, REPORT = 5),
-  .data = data, yobs = yobs
-)
+```{r, include = FALSE}
+# set.seed(2202201)
+# 
+# fit4 <- hydroPSO(
+#   theta, fn = "pred", lower = lower, upper = upper, 
+#   control = list(maxit = 100, REPORT = 5),
+#   .data = data, yobs = yobs
+# )
 ```
 
 # Compare optimization methods
 ```{r}
-results <- list(theta, fit1$par, fit1b$par, fit2$optim$bestmem, fit3$par, fit4$par)
+results <- list(theta, fit1$par, fit1b$par, fit2$optim$bestmem, fit3$par)
 
 results <- map(results, exp)
 
 tibble(
-  method = c("initial", "newuoa", "nelder", "DEoptim", "SA", "PSO"),
+  method = c("initial", "newuoa", "nelder", "DEoptim", "SA"),
   fbCLintall = map_dbl(results, "fbCLintall"), 
   ikiu = map_dbl(results, "ikiu"), 
   fbile = map_dbl(results, "fbile"), 

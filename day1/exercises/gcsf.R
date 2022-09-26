@@ -1,7 +1,7 @@
 
 # GCSF dosing ---------------------------------------------------
 
-source("src/global.R")
+source(here("day1/src/global.R"))
 library(dplyr)
 library(mrgsolve)
 rm(list = ls())

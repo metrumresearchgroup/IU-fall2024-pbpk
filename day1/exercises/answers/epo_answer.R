@@ -1,7 +1,7 @@
 
 # EPO route of administration answer ------------
 
-source("src/global.R")
+source(here("day1/src/global.R"))
 library(dplyr)
 library(mrgsolve)
 rm(list = ls())
@@ -21,7 +21,7 @@ rm(list = ls())
 #' over 1 month
 #' 
 
-mod <- mread("epo", "model") %>% zero_re()
+mod <- mread("epo", here("day1/model")) %>% zero_re()
 
 # Compare IV and SC ====================
 

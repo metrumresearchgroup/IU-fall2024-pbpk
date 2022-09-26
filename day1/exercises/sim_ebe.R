@@ -1,11 +1,11 @@
 
 # Simulate from a set of EBE  -------------------------------------------
 
-source("src/global.R")
+source(here("day1/src/global.R"))
 library(tidyverse)
 library(mrgsolve)
 
-patab <- read_table("data/meropenem/patab", skip = 1)
+patab <- read_table(here("day1/data/meropenem/patab"), skip = 1)
 
 patab <- distinct(patab, .keep_all = TRUE)
 
@@ -19,7 +19,7 @@ patab <- rename(patab, V3 = V2, V2 = V1)
 
 inventory(mod,patab)
 
-data <- read_csv("data/Simulated_DatasetMeropenem.csv", na = '.')
+data <- read_csv(here("day1/data/Simulated_DatasetMeropenem.csv"), na = '.')
 
 head(data)
 

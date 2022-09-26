@@ -1,8 +1,8 @@
 
 # Azithromycin Population PK -----------------------------------
 
-source("src/global.R")
-source("src/functions.R")
+source(here("day1/src/global.R"))
+source(here("day1/src/functions.R"))
 library(dplyr)
 library(mrgsolve)
 library(ggplot2)

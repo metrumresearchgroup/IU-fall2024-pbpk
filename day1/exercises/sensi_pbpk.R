@@ -1,14 +1,16 @@
 
 #' PBPK Sensitivity Analysis  -----------------------------------------
 
-source("src/global.R")
+source(here("day1/src/global.R"))
 library(dplyr)
 library(mrgsolve)
 rm(list = ls())
 
 
 #' Here is a PBPK model for DDI between a statin and CsA
-mod <- mread("yoshikado", "model") %>% update(delta = 0.1, end = 12)
+mod <- mread("yoshikado", here("day1/model")) %>% 
+  update(delta = 0.1, end = 12)
+
 see(mod)
 
 #' A single pitavastatin dose

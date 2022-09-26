@@ -1,7 +1,7 @@
 
 # Z-Pak  ---------------------------------------------------
 
-source("src/global.R")
+source(here("src/global.R"))
 library(dplyr)
 library(mrgsolve)
 rm(list = ls())
