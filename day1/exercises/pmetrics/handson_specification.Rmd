@@ -1,12 +1,11 @@
 ---
 title: "Model Specification"
-author: "Metrum Research Group, LLC"
+author: "Metrum Research Group"
 date: ""
 output: 
   html_document:
-    css: src/styles/styles.css
+    css: ../../src/styles/styles.css
     highlight: pygments
-    theme: flatly
 ---
 
 

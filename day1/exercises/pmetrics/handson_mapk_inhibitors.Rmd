@@ -1,16 +1,16 @@
 ---
 title: "Clinical responses to ERK inhibition in BRAF{V600E}-mutant colorectal cancer"
-author: "Metrum Research Group, LLC"
+author: "Metrum Research Group"
 date: ""
 output: 
   html_document: 
-    theme: flatly
     highlights: pygments
-    css: src/styles/styles.css
+    css: ../../src/styles/styles.css
 ---
 
 ```{r, echo = FALSE}
-source("src/global.R")
+library(here)
+source(here("day1/src/global.R"))
 knitr::opts_chunk$set(
   comment = '.', 
   message = FALSE, 
@@ -67,14 +67,14 @@ V600E mutant melanoma, but not so much in colorectal cancer
 library(mrgsolve)
 library(tidyverse)
 library(parallel)
-source("src/functions.R")
+source(here("day1/src/functions.R"))
 # mclapply <- lapply
 ```
 
 Read in the virtual population
 
 ```{r}
-vp <- readRDS("data/s10vpop_pk.RDS") %>% mutate(VPOP2 = seq(n()))
+vp <- readRDS(here("day1/data/s10vpop_pk.RDS")) %>% mutate(VPOP2 = seq(n()))
 
 dim(vp)
 
@@ -82,7 +82,7 @@ dim(vp)
 
 Load the model and pick one parameter set from vpop
 ```{r, message = FALSE}
-mod <- mread("mapk", "model") %>% update(end  = 56)
+mod <- mread("mapk", here("day1/model")) %>% update(end  = 56)
 
 mod <- param(mod, filter(vp,VPOP2==41))
 ```
@@ -95,6 +95,8 @@ mod <- param(mod, filter(vp,VPOP2==41))
 
 ```{r, fig.width = 8}
 e <- expand.ev(amt = seq(100,600,100), cmt = 12, ii = 1, addl = 20)
+
+e <- as.ev(e)
 
 e <- ev_seq(e, wait = 7, e) %>% as_data_frame() %>% arrange(ID)
 

@@ -1,18 +1,18 @@
 ---
 title: "VPC - meropenem PK model"
-author: "Metrum Research Group, LLC"
+author: "Metrum Research Group"
 date: ""
 output: 
   html_document:
-    css: src/styles/styles.css
+    css: ../../src/styles/styles.css
     highlight: pygments
-    theme: flatly
 ---
 
 
 ```{r, message = FALSE}
-source("src/global.R")
-source("src/functions.R")
+library(here)
+source(here("day1/src/global.R"))
+source(here("day1/src/functions.R"))
 library(dplyr)
 library(mrgsolve)
 library(readr)
@@ -50,7 +50,7 @@ col2 <- "firebrick"
 # Read and fix up the data set
 ```{r}
 data <- 
-  read_csv("data/Simulated_DatasetMeropenem.csv", na = '.')  %>% 
+  read_csv(here("day1/data/Simulated_DatasetMeropenem.csv"), na = '.')  %>% 
   mutate(CMT=1, DUR = AMT/RATE)
 ```
 
@@ -102,7 +102,7 @@ ggplot(data=obs, aes(TIME,DV)) +
 # Load the meropenem model
 
 ```{r}
-mod <- mread("meropenem", "model")
+mod <- mread("meropenem", here("day1/model"))
 see(mod)
 ```
 

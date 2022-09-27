@@ -23,7 +23,7 @@ rm(list = ls())
 #' Specifically, look at peripheral compartment concentration.
 #' 
 
-mod <- mread("azithro", "model") %>% zero_re
+mod <- mread("azithro", here("day1/model")) %>% zero_re()
 
 e <- seq(ev(amt = 250) ,ev(amt = 250, ii = 24, addl = 3))
 
