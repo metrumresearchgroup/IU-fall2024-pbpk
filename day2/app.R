@@ -3,7 +3,6 @@ library(shiny)
 library(tidyverse)
 library(mrgsolve)
 
-# Define UI for app that draws a histogram ----
 ui <- fluidPage(
   
   # App title ----
@@ -39,7 +38,6 @@ ui <- fluidPage(
 ##########################################################
 
 
-# Define server logic required to draw a histogram ----
 server <- function(input, output) {
   
   output$PBPKPlot <- renderPlot({

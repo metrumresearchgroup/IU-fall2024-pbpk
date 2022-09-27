@@ -18,29 +18,6 @@ knitr::opts_chunk$set(message = F, warning = F, echo = T)
 
 ---
 
-# Why R/mrgsolve?
-
-- Open-source
-- Flexible (easy integration - compartments, QSP, PDEs, etc..)
-- Platform free
-- Large active community (packages, troubleshooting - stackoverflow is your friend https://stackoverflow.com/)
-- Integrated ecosystem that allows end-to-end analysis
-    - Data manipulation
-    - Plotting
-    - Sensitivity analysis
-    - Parameter estimation
-    - Reproducibility: 
-        - version control (git, subversion)
-        - pkg management (pkgr https://github.com/metrumresearchgroup/pkgr, MPN https://mpn.metworx.com/docs/)
-    - Parallelization (local machine, cluster, or cloud)
-    - Dynamic/interactive presentations https://shiny.rstudio.com/gallery/
-
-![](figures/ecosystem.png){width=75%}
-
-- Fun!
-
----
-
 # What is PBPK modeling?
 
 A bottom-up modeling approach that uses physiological parameters to describe a drug's pharmacokinetics. The concept of PBPK modeling was introduced by Torsten Teorell in 1937 https://www.tandfonline.com/doi/pdf/10.3109/03009739509178895
@@ -75,6 +52,29 @@ A bottom-up modeling approach that uses physiological parameters to describe a d
 # General PBPK Workflow
 
 ![](figures/workflow.png){width=75%}
+
+---
+
+# Why R/mrgsolve?
+
+- Open-source
+- Flexible (easy integration - compartments, QSP, PDEs, etc..)
+- Platform free
+- Large active community (packages, troubleshooting - stackoverflow is your friend https://stackoverflow.com/)
+- Integrated ecosystem that allows end-to-end analysis
+    - Data manipulation
+    - Plotting
+    - Sensitivity analysis
+    - Parameter estimation
+    - Reproducibility: 
+        - version control (git, subversion)
+        - pkg management (pkgr https://github.com/metrumresearchgroup/pkgr, MPN https://mpn.metworx.com/docs/)
+    - Parallelization (local machine, cluster, or cloud)
+    - Dynamic/interactive presentations https://shiny.rstudio.com/gallery/
+
+![](figures/ecosystem.png){width=75%}
+
+- Fun!
 
 ---
 
