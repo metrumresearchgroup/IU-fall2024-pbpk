@@ -1071,7 +1071,21 @@ p_mab
 
 #### Add a simple tumor model
 
-Use the bamlanivimab mAb model as a template to add a simple tumor compartment. Run a simulation and plot mAb tumor concentration-time profile for 28 days. Tumor-specific parameters were obtained from Shah and Betts, 2012 publication (https://pubmed.ncbi.nlm.nih.gov/22143261/) 
+![](figures/shahMabAll.png)
+
+![](figures/shahMabTissue.png)
+
+<font size="1"> https://pubmed.ncbi.nlm.nih.gov/22143261/ </font>
+
+Steps:
+
+- Use original mAb model as template. You can copy all code related to a different non-clearing tissue (eg: muscle) and replace tissue reference with tumor. This should take care of most what you need to do including updating ODEs, initial conditions, compartments, etc..
+- Further modifications needed:
+    - Update `[ PARAM ]` block to include tumor physiologic parameters (volumes, flows, endothelial cell fraction, and reflection coefficients; https://pubmed.ncbi.nlm.nih.gov/22143261/). You also need to update `PLQ_Lung` to include tumor blood flow.
+    - Update `[ MAIN ]` block to include tumor FcRn in the total FcRn calculation.
+    - Update `[ ODE ]` block to add tumor plasma and lymphatic fluxes into the equations for plasma and lymph nodes.
+    
+Build a mAb PBPK model with a simple tumor compartment following the previous steps. Run a simulation and plot mAb tumor concentration-time profile for 28 days. 
 
 ```{r}
 lines_mod <- read_lines("models/mAb.mod")
@@ -1162,6 +1176,4 @@ p_mab_tumor
 ```
 
 
-Similarly, equations for antibody binding to specific tumor surface antigens and internalization of the complex can be added.
 
-![](figures/ShahMab.png)
