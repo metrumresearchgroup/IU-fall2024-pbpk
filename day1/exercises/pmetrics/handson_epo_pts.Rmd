@@ -1,12 +1,11 @@
 ---
 title: "Probability of Technical Success - EPO IV/SC QW/TIW"
-author: "Metrum Research Group, LLC"
+author: "Metrum Research Group"
 date: ""
 output: 
   html_document:
-    css: src/styles/styles.css
+    css: ../../src/styles/styles.css
     highlight: pygments
-    theme: flatly
 ---
 
 __Population Pharmacokinetic and Pharmacodynamic Model- Based Comparability Assessment of a Recombinant Human Epoetin Alfa and the Biosimilar HX575__
@@ -19,7 +18,8 @@ __Population Pharmacokinetic and Pharmacodynamic Model- Based Comparability Asse
 
 
 ```{r, message = FALSE}
-source("src/global.R")
+library(here)
+source(here("day1/src/global.R"))
 library(mrgsolve)
 library(dplyr)
 library(tidyr)
@@ -27,7 +27,7 @@ set.seed(112)
 ```
 
 ```{r}
-post <- readRDS("data/post_real.RDS")
+post <- readRDS(here("day1/data/post_real.RDS"))
 head(post)
 
 sam <- dplyr::sample_n(post, 100)
@@ -36,7 +36,7 @@ dim(post)
 ```
 
 ```{r}
-mod <- mread_cache("epo", "model")
+mod <- mread_cache("epo", here("day1/model"))
 see(mod)
 
 ```

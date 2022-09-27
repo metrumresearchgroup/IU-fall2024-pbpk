@@ -4,6 +4,7 @@
 source(here("day1/src/global.R"))
 library(dplyr)
 library(mrgsolve)
+rm(list = ls())
 
 #' - Load the `meropenem` model from the model directory
 #' - Simulate the following scenarios:

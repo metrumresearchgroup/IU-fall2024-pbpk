@@ -4,20 +4,19 @@ author: ""
 date: ""
 output: 
   html_document:
-    css: src/styles/styles.css
+    css: ../../src/styles/styles.css
     highlight: pygments
-    theme: flatly
 ---
 
 <hr><div class = spacersm></div>
 
 ```{r,echo=FALSE}
-source("src/global.R")
+library(here)
+source(here("day1/src/global.R"))
 ```
 
 # Packages
 ```{r}
-proj <- "models"
 library(mrgsolve)
 library(dplyr)
 library(magrittr)

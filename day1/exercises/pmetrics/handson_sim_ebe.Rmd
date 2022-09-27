@@ -1,24 +1,24 @@
 ---
 title: "Simulate from EBE"
-author: "Metrum Research Group, LLC"
+author: "Metrum Research Group"
 date: ""
 output: 
   html_document:
-    css: src/styles/styles.css
+    css: ../../src/styles/styles.css
     highlight: pygments
-    theme: flatly
 ---
 
 
 ```{r, message = FALSE, warning = FALSE}
-source("src/global.R")
+library(here)
+source(here("day1/src/global.R"))
 library(tidyverse)
 library(mrgsolve)
 ```
 
 
 ```{r}
-patab <- read_table("data/meropenem/patab", skip = 1)
+patab <- read_table(here("day1/data/meropenem/patab"), skip = 1)
 ```
 
 
@@ -43,7 +43,7 @@ inventory(mod,patab)
 ```
 
 ```{r}
-data <- read_csv("data/Simulated_DatasetMeropenem.csv", na = '.')
+data <- read_csv(here("day1/data/Simulated_DatasetMeropenem.csv"), na = '.')
 head(data)
 ```
 
