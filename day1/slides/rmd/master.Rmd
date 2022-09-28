@@ -60,8 +60,4 @@ knitr::opts_chunk$set(cache=TRUE,autodep=TRUE)
 ```
 
 
-```{r child = "1001_cipro.Rmd"}
-
-```
-
 

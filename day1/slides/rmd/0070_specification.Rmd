@@ -8,6 +8,20 @@ library(knitr)
 library(lattice)
 ```
 
+# Model specification
+
+
+- Assign name=value pairs
+  - like `CL = 1.25`
+  - "parameters"
+- Define compartment names and numbers
+- Derived inputs that influence ODE system
+  - like `ke = CL/V`
+- Write ODEs
+- Derived outputs 
+  - Signal that we want this output 
+
+
 # Let's make this model
 
 ![](../../src/images/simplepk.png)

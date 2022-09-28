@@ -39,7 +39,8 @@ army examination).
 
 
 ```{r}
-ggplot(swiss, aes(Examination,Fertility)) + geom_point() + geom_smooth()
+ggplot(swiss, aes(Examination,Fertility)) + geom_point() + geom_smooth() + 
+  xlim(0, NA) + ylim(0, NA)
 ```
 
 
@@ -68,7 +69,7 @@ predictors
     - Using `swiss` for now
 1. An __objective function__
     - To quantify how consistent a set of parameters are with the 
-observed data
+observed data via the __model__
 1. An __optimizer__
     - Search the parameter space for most optimal parameter value
 
@@ -91,10 +92,10 @@ linear_model <- function(intercept, slope, ex) {
 ```
 
 So we can get the predicted `Fertility` by passing in the intercept, 
-slope, and the `Examination` value
+slope, and the `Examination` value.
 
 ```{r}
-linear_model(intercept = 90, slope = -2, ex = 20)
+linear_model(intercept = 86, slope = -1, ex = 20)
 ```
 
 ## Data
@@ -174,8 +175,8 @@ forever to find the best set of parameters.
 
 Let's do this for a big batch of parameters
 
-- intercept from 75 to 95
-- slope from -2 to 0
+- intercept from 75 to 100
+- slope from -3 to 1
 
 ```{r}
 test <- expand.grid(intercept = seq(70,100,0.5), slope = seq(-3,1,0.05))
@@ -247,8 +248,8 @@ Differential evolution algorithm
 ```{r, output.size = 160}
 library(DEoptim)
 
-lower <- c(intercept=0, slope=-100)
-upper <- c(intercept = 1000, slope=100)
+lower <- c(intercept = 0, slope = -100)
+upper <- c(intercept = 1000, slope = 100)
 
 con <- DEoptim.control(itermax = 80, trace = 2)
 
@@ -271,7 +272,7 @@ ml <- function(p, ex, fer) {
   
   fer_hat <- linear_model(p[1], p[2], ex)
   
-  like <- dnorm(fer, fer_hat, p[3], log=TRUE)
+  like <- dnorm(fer, fer_hat, p[3], log = TRUE)
   
   -1*sum(like)
 }
