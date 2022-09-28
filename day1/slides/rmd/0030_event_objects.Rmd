@@ -79,7 +79,7 @@ mod %>% mrgsim(events = e)
 
 # <red> Your Turn</red>
 
-- File name: <grn>exercises/pkpk-csa.R</grn>
+- File name: <grn>day1/exercises/pkpk-csa.R</grn>
 
 
 <center>
@@ -109,7 +109,7 @@ e2 <- ev(amt = 100, time = 24, ii = 24, addl = 4)
 e <- c(e1,e2)
 mod %>% 
   ev(e) %>% 
-  mrgsim(end = 96) %>% plot(CP~.)
+  mrgsim(end = 120) %>% plot(CP~.)
 ```
 
 

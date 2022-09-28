@@ -14,3 +14,10 @@ library(mrgsolve)
 #' - Next, administer 2000 ug/kg BID for 1 week
 #' 
 
+mod <- mread("csa", project = "model")
+
+mod
+see(mod)
+param(mod)
+init(mod)
+

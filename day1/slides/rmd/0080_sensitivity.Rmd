@@ -1,20 +1,14 @@
 
 ```{r, include = FALSE}
-source(here("day1/src/global.R"))
+source(here::here("day1/src/global.R"))
 library(mrgsolve)
 library(dplyr)
 library(knitr)
 library(lattice)
 library(tidyverse)
+library(patchwork)
 select <- dplyr::select
 ```
-
-
-
-<br><br><br><br><br><br>
-
-<center><h1>Senstivity analysis</h1></center>
-
 
 # Sensitivity analysis
 
@@ -27,56 +21,38 @@ select <- dplyr::select
     - explore the whole parameter space; includes interactions
 
 
-# Local sensitivity analysis - `sensFun()`
+# Local sensitivity analysis 
 
-We use the function `sensFun` from the package FME (`FME::sensFun`)
+We use the `lsa()` function from the mrgsim.sa package
 
 ```{r}
-library(FME)
+library(mrgsim.sa)
 ```
 
 
 ```{r, eval = FALSE}
-?sensFun
+?lsa
 ```
-
-- To do local sensitivity analysis, we need 
-    - A function that accepts parameters as an argument and 
-      returns simulated data
-    - Some parameters to test
-    - An output variable of interest
 
 ```{r, eval=FALSE}
-sens <- sensFun(my_function, my_parameters, sensvar = my_variable_name)
+sens <- lsa(model_object, parameter_names, output_variables)
 ```
-
-- `sensFun` will take the parameter values we passed and manipulate them by 
-  small amounts to determine the __local__ sensitivity
 
 # First, look at the result
 
 
 ```{r, echo = FALSE,fig.align="center", fig.height = 8, fig.width = 12}
-myfun <- function(pars, mod) {
-  mod %>% 
-    param(pars) %>% 
-    ev(amt = 100) %>% 
-    Req(CP,RESP) %>%
-    mrgsim(end = 72) %>%
-    as.data.frame %>% 
-    select(-ID)
-}
+
 mod <- modlib("irm1", end = 72, delta = 0.1)
-sims <- mod %>% ev(amt = 100) %>% mrgsim() %>% mutate(var="Concentration",variable="CP",value=CP)
-sims <- select(sims, time,CP,var,variable,value)
-sens <- sensFun(myfun, parms=param(mod)[c("CL", "V2", "Q", "V3", "KA")],mod=mod,sensvar="CP")
-df <- gather(sens,variable,value, CL:KA) %>% mutate(time = x, var = "Sensitivity")
-df <- bind_rows(df,sims)               
-ggplot(df, aes(time,value,col=variable)) + geom_line(lwd=1) + 
-  facet_wrap(~var, scales = "free_y") + theme_bw() + theme(legend.position="top")
+
+sims <- mrgsim(mod, ev(amt = 100)) %>% as_tibble()
+sens <- lsa(mod %>% ev(amt = 100), par = "CL,V2,Q,V3,KA", var = "CP", 
+            eps = 1e-4)
+
+p1 <- ggplot(sims, aes(time, CP)) + geom_line()
+p2 <- lsa_plot(sens)
+p1+p2
 ```
-
-
 
 
 # A simulation scenario of interest
@@ -87,62 +63,26 @@ mod <- modlib("irm1", end = 72, delta = 0.1)
 mod %>%
   ev(amt = 100) %>% 
   mrgsim(end = 72, delta = 0.1) %>% 
-  plot
+  plot()
 ```
 
 
-# Create `myfun` to capture the scenario
-
-- This is the same workflow, but we wrap it in a function and allow
-parameters (and the model) to be passed in as arguments
-
+# lsa
 ```{r}
-
-myfun <- function(pars, mod) {
-  mod %>% 
-    param(pars) %>% 
-    ev(amt = 100) %>% 
-    mrgsim(end = 72, output = "df") %>%
-    select(-ID)
-}
-```
-
-- Also, we don't plot the result, but rather return a data frame 
-
-
-# Test out `myfun`
-```{r}
-myfun(as.list(param(mod)), mod) %>% head()
-```
-
-# Pick some parameters
-```{r}
-pars <- param(mod)[c("CL", "V2", "V3", "KA")]
-
-pars
-```
-
-
-# Run the analysis
-```{r}
-sens <- sensFun(myfun, pars, sensvar = "CP", mod = mod)
+sens <- lsa(
+  mod = ev(mod, amt = 100),
+  par = "CL,V2,Q,KA", 
+  var = "CP"
+)
 
 head(sens, n=3)
 ```
 
 # The default plot method
 ```{r}
-plot(sens, legpos = "right")
-
+plot(sens)
 ```
 
-# Re-shape sensitivity analysis results
-```{r}
-sens %>% 
-  gather(variable,value,CL:KA) %>% 
-  ggplot(aes(x,value,col=variable)) + geom_line(lwd=1) + theme_bw()
-
-```
 
 # Global senstivity analysis
 

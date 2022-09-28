@@ -121,15 +121,17 @@ plot(out, L+logV~(time/365), xlab = "Time (year)")
 
 - GitHub site: https://github.com/metrumresearchgroup/mrgsolve
 
-- Issues and questions: https://github.com/metrumresearchgroup/mrgsolve/issues
+- Discussion: https://github.com/metrumresearchgroup/mrgsolve/discussions
 
-- mrgsolve website: https://mrgsolve.github.io
+- Issues: https://github.com/metrumresearchgroup/mrgsolve/issues
 
-- User Guide: https://mrgsolve.github.io/user_guide
+- mrgsolve website: https://mrgsolve.org
 
-- Blog: https://mrgsolve.github.io/blog
+- User Guide: https://mrgsolve.org/user_guide
 
-- Vignettes: https://mrgsolve.github.io/vignettes
+- Blog: https://mrgsolve.org/blog
+
+- Vignettes: https://mrgsolve.org/vignettes
 
 # R for Data Science
 
@@ -143,8 +145,6 @@ https://r4ds.had.co.nz/
 1. Event objects
 1. Data sets
 1. Model specification - code together
-1. This and that
-1. Applied examples
 1. Whatever you ask about
 
 <h3><grn>Emphasis is on getting you running your own simulations today.</grn></h3>
