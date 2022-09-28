@@ -68,4 +68,3 @@ mod %>% mrgsim(rtol = 1E-12) %>% ...
 ```{r,eval = FALSE}
 mod <- param(mod, CL = 1.5)
 ```
-

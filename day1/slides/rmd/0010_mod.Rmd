@@ -37,7 +37,7 @@ mod %>% ev(amt = 100, ii = 24, addl = 3) %>% mrgsim() %>% plot()
     - An `event` in this example
 - <grn>mrgsim()</grn>: actually do the simulation
 - <orng>plot()</orng>: do something with the simulation
-    - `plot`, `mutate`, `as_data_frame` etc ... 
+    - `plot`, `mutate`, `as_tibble` etc ... 
 
 
 > - <red>model</red> `%>%` <blu>intervention</blu> `%>%` <grn>Go!</grn> `%>%` <orng>take-a-look</orng> 

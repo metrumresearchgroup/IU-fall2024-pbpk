@@ -16,7 +16,7 @@ source(here("day1/src/global.R"))
 #'     
 #' - Rifampin goes in `Xgutlumen`, midazolam goes in `mgutlumen`
 #'     
-#' - Plot rifampin concentraion over time for regimen 1
+#' - Plot rifampin concentration over time for regimen 1
 #' - Plot midazolam concentration over time for regimen 1 and 2
 #'
 #' - Outputs
@@ -25,6 +25,8 @@ source(here("day1/src/global.R"))
 #' 
 
 mod <- mread("rifampicin_midazolam", here("day1/model"))
+
+
 
 
 
