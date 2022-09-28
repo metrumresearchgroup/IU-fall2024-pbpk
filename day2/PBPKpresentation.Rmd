@@ -253,7 +253,7 @@ gp
 
 5. Integrate the model with an additional gut wall enterocyte compartment to account for 
 intestinal clearance, intestinal transit and lumen solubility effects on absorption rate. 
-Note: use about an intestinal clearance that is 30 times lower than hepatic clearance.
+Note: use an intestinal clearance that is 30 times lower than hepatic clearance.
 Recompile and re-run the previous step. Any change!!
 
 ![](figures/absorption_model.png){width=25%}
@@ -1015,6 +1015,13 @@ Explore the simple shiny app saved as `app.R`
 
 ![](figures/OpenScience.png)
 
+- Jones mAb PBPK model structure:
+
+![](figures/mAbPBPK_jones.png)
+<font size="1"> https://ascpt.onlinelibrary.wiley.com/doi/epdf/10.1002/psp4.12461 </font>
+
+- Explore Jones model equations (https://ascpt.onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1002%2Fpsp4.12461&file=psp412461-sup-0001-TableS1-S3.pdf) and model file (https://github.com/metrumresearchgroup/bioPBPK)
+
 - **Results**:
     - Identified bamlanivimab (LY-CoV555) as the best mAb candidate that would achieve the target concentration (IC90) in the lung tissue over 28 days in 90% of patients using the lowest dose possible.
     - The PBPK model predictions suggested a clinical dose between 175-500 mg. The viral dynamics model suggested a clinical dose of 700 mg (achieves maximum viral elimination).
@@ -1079,7 +1086,7 @@ p_mab
 
 Steps:
 
-- Use original mAb model as template. You can copy all code related to a different non-clearing tissue (eg: muscle) and replace tissue reference with tumor. This should take care of most what you need to do including updating ODEs, initial conditions, compartments, etc..
+- Use original mAb model as a template. You can copy all code related to a different non-clearing tissue (eg: muscle) and replace tissue references with tumor. This should take care of most what you need to do including updating ODEs, initial conditions, compartments, etc..
 - Further modifications needed:
     - Update `[ PARAM ]` block to include tumor physiologic parameters (volumes, flows, endothelial cell fraction, and reflection coefficients; https://pubmed.ncbi.nlm.nih.gov/22143261/). You also need to update `PLQ_Lung` to include tumor blood flow.
     - Update `[ MAIN ]` block to include tumor FcRn in the total FcRn calculation.
