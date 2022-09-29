@@ -194,7 +194,7 @@ gp <- ggplot() +
                       breaks=c("observed","sim"),
                       labels=c("observed","predicted")) +
   guides(colour = guide_legend(override.aes = list(linetype=c(0,1), shape=c(16, NA)))) +
-  labs(title="Adult 4 mg/kg PO", x="time (h)", y="Plasma concentration (mg/L)") +
+  labs(title="Adult 200 mg PO", x="time (h)", y="Plasma concentration (mg/L)") +
   theme_bw()
 gp
 
