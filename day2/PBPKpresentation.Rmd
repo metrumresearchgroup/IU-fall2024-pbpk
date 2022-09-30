@@ -638,15 +638,15 @@ theta <- log(c(Kpmu=2.94, sigma=1))  #initial parameter for MLE; mean and standa
 
 ##Fit with nloptr package
 ##derivative-free optimizers
-#fit <- neldermead(theta, OF)  #Nelder-Mead simplex
+#fit <- neldermead(theta, OF, dat=nm)  #Nelder-Mead simplex
 fit <- newuoa(theta, OF, dat=nm)  #New Unconstrained Optimization with quadratic Approximation
 
 ##gradient-basd optimizers
-#fit <- tnewton(theta, OF)  #Local optimizer; Nelder-Mead simplex
-#fit <- mlsl(theta, OF, lower=log(c(0.1)), upper=log(c(10)))  #global optimizer; multi-level single-linkage; takes very long ~ 10 min
+#fit <- tnewton(theta, OF, dat=nm)  #Local optimizer; Nelder-Mead simplex
+#fit <- mlsl(theta, OF, dat=nm, lower=log(c(0.1, 0.1)), upper=log(c(10, 2)))  #global optimizer; multi-level single-linkage; takes very long ~ 10 min
 
 ##global optimizers
-#fit <- direct(OF, lower=log(c(0.1, 0.1)), upper=log(c(10, 2)))  #DIviding RECTangles algorithm; takes ~ 3 min
+#fit <- direct(OF, dat=nm, lower=log(c(0.1, 0.1)), upper=log(c(10, 2)))  #DIviding RECTangles algorithm; takes ~ 3 min
 
 fit
 
