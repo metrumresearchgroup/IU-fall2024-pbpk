@@ -12,3 +12,7 @@
 - mrgsim.parallel
 - PBPKToolkit
 - shiny
+- here
+- knitr
+- lattice
+- patchwork
