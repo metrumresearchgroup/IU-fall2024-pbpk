@@ -1,3 +1,4 @@
+source("renv/activate.R")
 .libPaths("rlibs")
 paths <- paste(.libPaths(), collapse = "\n")
 message("PBPK Workshop with IU and Lilly")
