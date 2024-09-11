@@ -2,8 +2,8 @@
 
 - tidyverse
 - mrgsolve
-- library(mrgsim.sa)
-- library(nloptr)
+- mrgsim.sa
+- nloptr
 - numDeriv
 - kableExtra
 - PKNCA
