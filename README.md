@@ -16,3 +16,4 @@
 - knitr
 - lattice
 - patchwork
+- FME
