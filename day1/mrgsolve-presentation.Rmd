@@ -265,3 +265,122 @@ init(mod)
 > - Every compartment gets a name
 > - Every compartment gets an initial condition
 
+
+```{r echo = FALSE, message = FALSE}
+mod <- mread_cache("pk1", modlib()) %>% 
+  update(end = 192, delta = 0.2) %>% Req(CP)
+data(exidata)
+data <- filter(exidata, ID <=10)
+set.seed(1222)
+```
+
+# Where did <red>mod</red> come from?
+
+```{r, eval = FALSE}
+mod <- mread("simple", "model")
+```
+
+
+```{r, eval = FALSE}
+mod <- mread("<model-name>", "<project-directory>")
+```
+
+- By default mrgsolve looks for the code in the file
+    - <grn>model-name.cpp</grn> in
+    - <blu>project-directory</blu>
+
+- <red>mread demo</red>
+
+```{r, echo = FALSE}
+Sys.sleep(2)
+```
+
+
+# Read in a model object with caching {.drop}
+
+First time to read
+```{r, include = FALSE, message = FALSE}
+mod <- mread("simple", here("day1/model"), preclean = TRUE, compile = FALSE)
+```
+
+
+```{r, message = TRUE}
+mod <- mread_cache("simple", here("day1/model"))
+```
+
+Next time to read
+
+```{r, message = TRUE}
+mod <- mread_cache("simple", here("day1/model"))
+```
+
+# Model build directory (`soloc`)
+
+It can be helpful to set
+
+```{r, eval=FALSE}
+options(mrgsolve.soloc = "my_build_directory")
+```
+
+Equivalent to 
+
+```{r,eval=FALSE}
+mod <- mread("simple", here("day1/model"), soloc = "my_build_directory")
+```
+
+# Internal model library
+
+```{r, eval = FALSE}
+mod <- mread("<first-argument>", "<second-argument>")
+```
+
+# Internal model library
+
+```{r, eval = FALSE}
+mod <- mread("<first-argument>", "<second-argument>")
+```
+
+```{r, eval = FALSE}
+mod <- mread("<first-argument>", modlib())
+```
+
+```{r}
+modlib()
+```
+
+
+# Internal model library
+```{r}
+mod <- mread("effect", modlib())
+```
+
+```{r}
+mod
+```
+
+
+
+# Try this now
+
+Open R script in Rstudio then ...
+
+```{r, eval = FALSE}
+library(mrgsolve)
+```
+
+
+```{r,eval=FALSE}
+mod <- mread("pbpk", modlib())
+```
+
+
+```{r}
+mod <- modlib("pbpk")
+```
+
+# <red>Your turn</red>
+
+- File name: <grn>day1/exercises/warm_up.R</grn>
+
+- Section name: <blu>Warm Up</blu>
+

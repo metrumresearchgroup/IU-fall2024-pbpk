@@ -1762,6 +1762,83 @@ effects</li>
 </ul>
 </blockquote>
 </div>
+<div id="where-did-mod-come-from" class="section level1">
+<h1>Where did <red>mod</red> come from?</h1>
+<pre class="r"><code>mod &lt;- mread(&quot;simple&quot;, &quot;model&quot;)</code></pre>
+<pre class="r"><code>mod &lt;- mread(&quot;&lt;model-name&gt;&quot;, &quot;&lt;project-directory&gt;&quot;)</code></pre>
+<ul>
+<li>By default mrgsolve looks for the code in the file
+<ul>
+<li><grn>model-name.cpp</grn> in</li>
+<li><blu>project-directory</blu></li>
+</ul></li>
+<li><red>mread demo</red></li>
+</ul>
+</div>
+<div id="read-in-a-model-object-with-caching" class="section level1 drop">
+<h1 class="drop">Read in a model object with caching</h1>
+<p>First time to read</p>
+<pre class="r"><code>mod &lt;- mread_cache(&quot;simple&quot;, here(&quot;day1/model&quot;))</code></pre>
+<pre><code>. Building simple ... done.</code></pre>
+<p>Next time to read</p>
+<pre class="r"><code>mod &lt;- mread_cache(&quot;simple&quot;, here(&quot;day1/model&quot;))</code></pre>
+<pre><code>. Loading model from cache.</code></pre>
+</div>
+<div id="model-build-directory-soloc" class="section level1">
+<h1>Model build directory (<code>soloc</code>)</h1>
+<p>It can be helpful to set</p>
+<pre class="r"><code>options(mrgsolve.soloc = &quot;my_build_directory&quot;)</code></pre>
+<p>Equivalent to</p>
+<pre class="r"><code>mod &lt;- mread(&quot;simple&quot;, here(&quot;day1/model&quot;), soloc = &quot;my_build_directory&quot;)</code></pre>
+</div>
+<div id="internal-model-library" class="section level1">
+<h1>Internal model library</h1>
+<pre class="r"><code>mod &lt;- mread(&quot;&lt;first-argument&gt;&quot;, &quot;&lt;second-argument&gt;&quot;)</code></pre>
+</div>
+<div id="internal-model-library-1" class="section level1">
+<h1>Internal model library</h1>
+<pre class="r"><code>mod &lt;- mread(&quot;&lt;first-argument&gt;&quot;, &quot;&lt;second-argument&gt;&quot;)</code></pre>
+<pre class="r"><code>mod &lt;- mread(&quot;&lt;first-argument&gt;&quot;, modlib())</code></pre>
+<pre class="r"><code>modlib()</code></pre>
+<pre><code>. [1] &quot;/Users/ahmede/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.4/aarch64-apple-darwin23.4.0/mrgsolve/1.5.1/689a814a168f375aa0ebfeeb3ee78394/mrgsolve/models&quot;</code></pre>
+</div>
+<div id="internal-model-library-2" class="section level1">
+<h1>Internal model library</h1>
+<pre class="r"><code>mod &lt;- mread(&quot;effect&quot;, modlib())</code></pre>
+<pre class="r"><code>mod</code></pre>
+<pre><code>. 
+. 
+. ----------------  source: effect.cpp  ----------------
+. 
+.   project: /Users/ahmede/Li...gsolve/models
+.   shared object: effect-so-853b1593bf41 
+. 
+.   time:          start: 0 end: 36 delta: 0.1
+.                  add: &lt;none&gt;
+. 
+.   compartments:  GUT CENT PERIPH CE [4]
+.   parameters:    VC KA K10 K12 K21 E0 EMAX EC50 KEO [9]
+.   captures:      EFFECT CP [2]
+.   omega:         0x0 
+.   sigma:         0x0 
+. 
+.   solver:        atol: 1e-08 rtol: 1e-08 maxsteps: 20k
+. ------------------------------------------------------</code></pre>
+</div>
+<div id="try-this-now" class="section level1">
+<h1>Try this now</h1>
+<p>Open R script in Rstudio then …</p>
+<pre class="r"><code>library(mrgsolve)</code></pre>
+<pre class="r"><code>mod &lt;- mread(&quot;pbpk&quot;, modlib())</code></pre>
+<pre class="r"><code>mod &lt;- modlib(&quot;pbpk&quot;)</code></pre>
+</div>
+<div id="your-turn" class="section level1">
+<h1><red>Your turn</red></h1>
+<ul>
+<li><p>File name: <grn>day1/exercises/warm_up.R</grn></p></li>
+<li><p>Section name: <blu>Warm Up</blu></p></li>
+</ul>
+</div>
 
 
 
