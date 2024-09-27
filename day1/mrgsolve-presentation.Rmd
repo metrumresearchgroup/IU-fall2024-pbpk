@@ -21,7 +21,7 @@ options(mrgsolve.soloc = "build")
 library(here)
 source(here("day1/src/global.R"))
 library(mrgsolve)
-library(dplyr)
+library(tidyverse)
 library(knitr)
 library(lattice)
 library(patchwork)
@@ -456,7 +456,7 @@ mod %>% mrgsim(events = e)
 
 # <red> Your Turn</red>
 
-- File name: <grn>day1/exercises/pkpk-csa.R</grn>
+- File name: <grn>day1/exercises/pbpk-csa.R</grn>
 
 
 <center>
