@@ -1488,15 +1488,6 @@ Systems Pharmacology Models.__
     - PMID: 27548289 
     - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5006244/
 
-# Global senstivity analysis
-
-
-- __Sobol Sensitivity Analysis: A Tool to Guide the Development and Evaluation of 
-~~Systems Pharmacology~~ PBPK Models.__
-    - Zhang XY, Trame MN, Lesko LJ, Schmidt S.
-    - CPT Pharmacometrics Syst Pharmacol. 2015 Feb;4(2):69-79. doi: 10.1002/psp4.6.
-    - PMID: 27548289 
-    - https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5006244/
 
 # Sobol
 
