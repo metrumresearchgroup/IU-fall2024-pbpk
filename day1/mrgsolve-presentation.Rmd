@@ -335,12 +335,6 @@ mod <- mread("simple", here("day1/model"), soloc = "my_build_directory")
 mod <- mread("<first-argument>", "<second-argument>")
 ```
 
-# Internal model library
-
-```{r, eval = FALSE}
-mod <- mread("<first-argument>", "<second-argument>")
-```
-
 ```{r, eval = FALSE}
 mod <- mread("<first-argument>", modlib())
 ```
