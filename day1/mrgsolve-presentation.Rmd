@@ -1364,8 +1364,6 @@ add(x = 2, y = 3)
 ```
 
 
-# Functions
-
 - Arguments can be matched by position
 - Calling `return()` is not strictly necessary
 
@@ -1377,8 +1375,6 @@ add <- function(x, y) {
 add(2,3)
 ```
 
-
-# Functions
 
 - Arguments can have default values
 
@@ -1476,9 +1472,6 @@ plot(sens)
 
 
 __We'll look at Sobol's method__
-
-
-# Global senstivity analysis
 
 
 - __Sobol Sensitivity Analysis: A Tool to Guide the Development and Evaluation of 
