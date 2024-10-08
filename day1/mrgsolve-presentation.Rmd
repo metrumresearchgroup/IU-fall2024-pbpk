@@ -593,7 +593,7 @@ mod <- mread_cache("effect", modlib())
 
 <hr>
 
-`model %>% intervention %>% <grn>Go!</grn>`
+`model %>% intervention %>% Go!`
 
 <hr>
 
@@ -648,7 +648,7 @@ stime(mod)
 
 <hr>
 
-`<red>model</red> %>% <blu>intervention</blu> %>% <grn>Go!</grn> %>% <orng>take-a-look</orng>` 
+`model %>% intervention %>% Go! %>% take-a-look` 
 
 <hr>
 
@@ -671,7 +671,7 @@ stime(mod)
 
 <hr>
 
-`model %>% intervention %>% Go! %>% <orng>take-a-look</orng>` 
+`model %>% intervention %>% Go! %>% take-a-look` 
 
 <hr>
 
@@ -801,9 +801,7 @@ pop <- exidata
 # Add a population element to the simulation
 
 
-- <red>model</red> `%>%` <blu>intervention</blu> `%>%` <grn>Go!</grn> `%>%`  <purp>take-a-look</purp>
-
-> - `model %>% intervention %>%` <orng>population</orng> `%>% Go! %>% take-a-look`
+`model %>% intervention %>% population %>% Go! %>% take-a-look`
 
 
 # One population simulation with mrgsolve
@@ -935,11 +933,6 @@ ev(amt = 100, ii = 24, addl = 3)
 > - `mod + ev = ?`
 > - `mod + idata_set + ev = ?`
 > - `mod + data_set = ?`
-
-# Wait a minute ...
-```{r}
-head(data)
-```
 
 # Generating data sets
 
@@ -1095,7 +1088,7 @@ the names in your input data sets
 
 *  Specify `name` and `number` of compartments in the model
 *  Use any name except for those listed in `mrgsolve:::reserved()`
-*  See also  or `$INIT`
+*  See also `$INIT`
 
 Example `$CMT`
 ```{c,eval=FALSE}
@@ -1224,7 +1217,6 @@ in your model
 
 * NONMEM-style input - lower triangle
 * Multiple `$OMEGA` and `$SIGMA` are allowed and each may be named
-* How you enter these blocks defines a \ttg{signature} that `mrgsolve` will enforce later on
 * Diagonal matrix (3x3 in this example)
 
 ```{c, eval=FALSE}
@@ -1322,7 +1314,7 @@ set `F_CMT` in `$MAIN`
     - Also, use `rate = -2` in your data set or event object
 
 - To set the infusion rate, set `R_CMT` in `$MAIN`
-    - ALso, use `rate = -1` in your data set or event object
+    - Also, use `rate = -1` in your data set or event object
 
 
 # Functions
