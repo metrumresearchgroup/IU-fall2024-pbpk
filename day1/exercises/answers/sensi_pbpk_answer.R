@@ -30,3 +30,9 @@ ddi <- seq(csa, wait = 0.5, pit)
 #' - Make a plot for the statin plasma concentrations
 #' 
 
+param(mod)$ikiu
+
+idata <- expand.ev(ikiu = runif(5, 0.1, 5))
+
+mod %>% ev(ddi) %>% idata_set(idata) %>% mrgsim() %>% plot(CP ~ time)
+

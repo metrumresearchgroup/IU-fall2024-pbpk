@@ -23,7 +23,10 @@ source(here("day1/src/global.R"))
 
 mod <- mread("rifampicin_midazolam", here("day1/model"))
 
-
+e1 <- ev(amt = 600, cmt = "Xgutlumen", ii = 24, addl = 9)
+e2 <- ev(amt = 3, cmt = "Mgutlumen")
+e <- seq(e1, e2)
+mod %>% ev(e) %>% mrgsim(end = 260) %>% plot(Ccentral + mCcentral ~ time/24)
 
 
 
