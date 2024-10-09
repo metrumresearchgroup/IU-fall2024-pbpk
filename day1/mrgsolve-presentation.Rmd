@@ -1024,20 +1024,6 @@ dosing
 
 - File name: <grn>exercises/gcsf.R</grn>
 
-# <red>Your turn</red>
-
-- Description: Population PK of azithromycin
-
-- File name: <grn>exercises/population_azithromycin.R</grn>
-
-
-# <red>Your turn</red>
-
-- Description: simulate PK profiles using empirical Bayes estimates 
-from a meropenem model fit in NONMEM
-
-- File name: <grn>exercises/sim_ebe.R</grn>
-
 
 
 # Model specification
