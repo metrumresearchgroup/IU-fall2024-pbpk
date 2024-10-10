@@ -184,17 +184,17 @@ mod %>% ev(amt = 100, ii = 24, addl = 3) %>% mrgsim() %>% plot()
 
 # What's coming ...
 
-> - `model %>% intervention %>%` <alrt>options</alrt> `%>% Go! %>% ...`
+> - `model %>% intervention %>% options %>% Go! %>% ...`
 
-> - `model %>% intervention %>%` <orng>population</orng> `%>% Go! %>% ...`
+> - `model %>% intervention %>% population %>% Go! %>% ...`
 
-> - `model %>%` <purp>data-set</purp> `%>% Go! %>% ...`
+> - `model %>% data-set %>% Go! %>% ...`
 
-> - where <purp>data-set</purp> = `intervention + population`
+> - where `data-set` = `intervention + population`
 
 > - For now, let's get this part down 
 
-> - <red>model</red> `%>%` <blu>intervention</blu> `%>%` <grn>Go!</grn> `%>%` <orng>take-a-look<orng> 
+> - `model %>% intervention %>% Go! %>% take-a-look` 
 
 
 # Why do we use `%>%` ?
